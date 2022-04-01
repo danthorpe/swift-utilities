@@ -2,6 +2,8 @@ import Combine
 import Foundation
 import Reachability
 
+@available(iOS 13.0, *)
+@available(macOS 10.15, *)
 public extension Reachability {
 
     static let satisfied = always(.satisfied)
@@ -16,6 +18,8 @@ public extension Reachability {
     }
 }
 
+@available(iOS 13.0, *)
+@available(macOS 10.15, *)
 public extension Reachability {
 
     static let intermittent = Self(
