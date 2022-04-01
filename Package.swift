@@ -13,14 +13,16 @@ let package = Package(
     ],
     products: [
         .library(name: "Concurrency", targets: ["Concurrency"]),
-        .library(name: "Utilities", targets: ["Concurrency"]),
+        .library(name: "Reachability", targets: ["ReachabilityLive"]),
+        .library(name: "ReachabilityMocks", targets: ["ReachabilityMocks"]),
+        .library(name: "Utilities", targets: ["Concurrency", "ReachabilityLive"]),
     ],
-    dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
-    ],
+    dependencies: [ ],
     targets: [
         .target(name: "Concurrency", dependencies: []),
+        .target(name: "Reachability", dependencies: []),
+        .target(name: "ReachabilityLive", dependencies: ["Reachability"]),
+        .target(name: "ReachabilityMocks", dependencies: ["Reachability"]),
         .testTarget(name: "ConcurrencyTests", dependencies: ["Concurrency"]),
     ]
 )
