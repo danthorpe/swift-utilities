@@ -3,6 +3,8 @@ import Foundation
 import Network
 import Reachability
 
+@available(iOS 13.0, *)
+@available(macOS 10.15, *)
 public extension Reachability {
 
     static let live = live(queue: .main)
@@ -25,6 +27,8 @@ public extension Reachability {
     }
 }
 
+@available(iOS 13.0, *)
+@available(macOS 10.15, *)
 extension Reachability.Path.Status {
     init(rawValue: NWPath.Status) {
         switch rawValue {
@@ -40,6 +44,8 @@ extension Reachability.Path.Status {
     }
 }
 
+@available(iOS 13.0, *)
+@available(macOS 10.15, *)
 extension Reachability.Path {
     init(rawValue: NWPath) {
         self.init(status: .init(rawValue: rawValue.status))

@@ -1,6 +1,7 @@
 import XCTest
 @testable import Concurrency
 
+@available(iOS 13.0, *)
 final class ProtectedTests: XCTestCase {
 
     struct Subject {
