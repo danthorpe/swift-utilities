@@ -15,7 +15,8 @@ let package = Package(
         .library(name: "Concurrency", targets: ["Concurrency"]),
         .library(name: "Reachability", targets: ["ReachabilityLive"]),
         .library(name: "ReachabilityMocks", targets: ["ReachabilityMocks"]),
-        .library(name: "Utilities", targets: ["Concurrency", "ReachabilityLive"]),
+        .library(name: "ShortID", targets: ["ShortID"]),
+        .library(name: "Utilities", targets: ["Concurrency", "ReachabilityLive", "ShortID"]),
     ],
     dependencies: [ ],
     targets: [
@@ -23,6 +24,8 @@ let package = Package(
         .target(name: "Reachability", dependencies: []),
         .target(name: "ReachabilityLive", dependencies: ["Reachability"]),
         .target(name: "ReachabilityMocks", dependencies: ["Reachability"]),
+        .target(name: "ShortID", dependencies: ["Concurrency"]),
         .testTarget(name: "ConcurrencyTests", dependencies: ["Concurrency"]),
+        .testTarget(name: "ShortIDTests", dependencies: ["ShortID"]),
     ]
 )
