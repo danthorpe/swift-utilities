@@ -1,5 +1,5 @@
-import XCTest
 @testable import Concurrency
+import XCTest
 
 @available(iOS 13.0, *)
 final class ProtectedTests: XCTestCase {
