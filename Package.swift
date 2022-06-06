@@ -13,8 +13,8 @@ let package = Package(
     ],
     products: [
         .library(name: "Cache", targets: ["Cache"]),
-        .library(name: "Calendaring", targets: ["Calendaring"]),
         .library(name: "Concurrency", targets: ["Concurrency"]),
+        .library(name: "EnvironmentProviders", targets: ["EnvironmentProviders"]),
         .library(name: "Reachability", targets: ["ReachabilityLive"]),
         .library(name: "ReachabilityMocks", targets: ["ReachabilityMocks"]),
         .library(name: "ShortID", targets: ["ShortID"]),
@@ -22,9 +22,9 @@ let package = Package(
     ],
     dependencies: [ ],
     targets: [
-        .target(name: "Cache", dependencies: ["Calendaring"]),
-        .target(name: "Calendaring", dependencies: []),
+        .target(name: "Cache", dependencies: ["EnvironmentProviders"]),
         .target(name: "Concurrency", dependencies: []),
+        .target(name: "EnvironmentProviders", dependencies: []),
         .target(name: "Reachability", dependencies: []),
         .target(name: "ReachabilityLive", dependencies: ["Reachability"]),
         .target(name: "ReachabilityMocks", dependencies: ["Reachability"]),
