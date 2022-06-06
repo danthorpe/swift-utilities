@@ -1,8 +1,11 @@
-import Calendaring
+import EnvironmentProviders
 import Combine
 import Foundation
+import os.log
 
 #if canImport(UIKit) || canImport(AppKit)
+@available(iOS 14.0, *)
+@available(macOS 11.0, *)
 public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Value: Codable {
     typealias Storage = CacheStorage<Key, Value>
     public typealias ReadData = () -> Data?
@@ -19,8 +22,9 @@ public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Val
         write: @escaping WriteData,
         upstream: Upstream
     ) where Encoder.Output == Data, Decoder.Input == Data, Upstream.Output == Notification, Upstream.Failure == Never {
+
         if let data = read(), var storage = try? decoder.decode(Storage.self, from: data) {
-            print("Read \(storage.count) items from disk cache")
+            Logger.cache?.info("🗃 Read \(storage.count) items from disk cache.")
             storage.set(size: size)
             self.cache = .init(storage: storage)
         }
@@ -36,22 +40,16 @@ public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Val
                     try write(data)
                 }
                 catch {
-                    print("Error saving cache to disk: \(error)")
+                    Logger.cache?.info("⚠️ Error saving cache to disk: \(error)")
                 }
             }
     }
 
     public convenience init(
         size: Int,
-        fileName: String,
-        fileManager: FileManager = .default,
-        notificationCenter: NotificationCenter = .default
+        fileURL: URL,
+        notificationCenter: NotificationCenter
     ) {
-        let fileURL = fileManager
-            .urls(for: .cachesDirectory, in: .userDomainMask)
-            .first?
-            .appendingPathComponent(fileName + ".cache")
-
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
 
@@ -65,12 +63,28 @@ public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Val
             encoder: encoder,
             write: { data in
                 if let fileURL = fileURL {
-                    print("Writing to: \(fileURL)")
+                    Logger.cache?.info("🗄 Writing items to disk cache: \(fileURL.absoluteString)")
                     try data.write(to: fileURL)
                 }
             },
-            upstream: notificationCenter.publisher(for: .willResignActiveNotification)
+            upstream: notificationCenter
+                .publisher(for: .willResignActiveNotification)
+                .merge(with: notificationCenter.publisher(for: .willTerminateNotification))
         )
+    }
+
+    public convenience init?(
+        size: Int,
+        fileName: String,
+        fileManager: FileManager = .default,
+        notificationCenter: NotificationCenter = .default
+    ) {
+        guard let fileURL = fileManager
+            .urls(for: .cachesDirectory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent(fileName + ".cache")
+        else { return nil }
+        self.init(size: size, fileURL: fileURL, notificationCenter: notificationCenter)
     }
 
     public var count: Int {
@@ -100,11 +114,19 @@ import AppKit
 
 extension Notification.Name {
     static let willResignActiveNotification: Self = {
-        #if canImport(AppKit)
+#if canImport(AppKit)
         return NSApplication.willResignActiveNotification
-        #elseif canImport(UIKit)
+#elseif canImport(UIKit)
         return UIApplication.willResignActiveNotification
-        #endif
+#endif
+    }()
+
+    static let willTerminateNotification: Self = {
+#if canImport(AppKit)
+        return NSApplication.willTerminateNotification
+#elseif canImport(UIKit)
+        return UIApplication.willTerminateNotification
+#endif
     }()
 }
 #endif
