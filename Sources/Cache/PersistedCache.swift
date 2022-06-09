@@ -40,7 +40,7 @@ public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Val
                     try write(data)
                 }
                 catch {
-                    Logger.cache?.info("⚠️ Error saving cache to disk: \(error)")
+                    Logger.cache?.info("⚠️ Error saving cache to disk: \(String(describing: error))")
                 }
             }
     }
@@ -57,15 +57,12 @@ public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Val
             size: size,
             decoder: PropertyListDecoder(),
             read: {
-                guard let fileURL = fileURL else { return nil }
-                return try? Data(contentsOf: fileURL)
+                try? Data(contentsOf: fileURL)
             },
             encoder: encoder,
             write: { data in
-                if let fileURL = fileURL {
-                    Logger.cache?.info("🗄 Writing items to disk cache: \(fileURL.absoluteString)")
-                    try data.write(to: fileURL)
-                }
+                Logger.cache?.info("🗄 Writing items to disk cache: \(fileURL.absoluteString)")
+                try data.write(to: fileURL)
             },
             upstream: notificationCenter
                 .publisher(for: .willResignActiveNotification)
