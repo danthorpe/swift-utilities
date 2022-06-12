@@ -1,7 +1,7 @@
 import EnvironmentProviders
 import Foundation
 
-struct CacheStorage<Key: Hashable, Value> {
+struct OLDCacheStorage<Key: Hashable, Value> {
 
     final class CacheKey: NSObject {
         let key: Key
@@ -43,6 +43,7 @@ struct CacheStorage<Key: Hashable, Value> {
 
         func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
             guard let cachedValue = obj as? CachedValue else { return }
+            print("Removing \(cachedValue.key)")
             keys.remove(cachedValue.key)
         }
     }
@@ -68,7 +69,7 @@ struct CacheStorage<Key: Hashable, Value> {
     }
 }
 
-extension CacheStorage {
+extension OLDCacheStorage {
 
     var count: Int {
         keyTracker.keys.count
@@ -106,9 +107,9 @@ extension CacheStorage {
 
 // MARK: - Codable
 
-extension CacheStorage.CachedValue: Codable where Key: Codable, Value: Codable { }
+extension OLDCacheStorage.CachedValue: Codable where Key: Codable, Value: Codable { }
 
-extension CacheStorage: Codable where Key: Codable, Value: Codable {
+extension OLDCacheStorage: Codable where Key: Codable, Value: Codable {
     enum CodingKeys: CodingKey {
         case size, cachedValues
     }

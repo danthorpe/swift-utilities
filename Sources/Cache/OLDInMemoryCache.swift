@@ -2,8 +2,8 @@ import Combine
 import EnvironmentProviders
 import Foundation
 
-public final class InMemoryCache<Key: Hashable, Value> {
-    typealias Storage = CacheStorage<Key, Value>
+public final class OLDInMemoryCache<Key: Hashable, Value> {
+    typealias Storage = OLDCacheStorage<Key, Value>
     typealias CachedValue = Storage.CachedValue
 
     private(set) var storage: Storage

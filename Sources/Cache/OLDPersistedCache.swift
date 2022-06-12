@@ -6,12 +6,12 @@ import os.log
 #if canImport(UIKit) || canImport(AppKit)
 @available(iOS 14.0, *)
 @available(macOS 11.0, *)
-public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Value: Codable {
-    typealias Storage = CacheStorage<Key, Value>
+public actor OLDPersistedCache<Key: Hashable, Value>: CacheInterface where Key: Codable, Value: Codable {
+    typealias Storage = OLDCacheStorage<Key, Value>
     public typealias ReadData = () -> Data?
     public typealias WriteData = (Data) throws -> Void
 
-    public let cache: InMemoryCache<Key, Value>
+    public let cache: OLDInMemoryCache<Key, Value>
     var subscription: AnyCancellable?
 
     public init<Encoder: TopLevelEncoder, Decoder: TopLevelDecoder, Upstream: Publisher>(
@@ -99,31 +99,5 @@ public actor PersistedCache<Key: Hashable, Value>: Cache where Key: Codable, Val
     public func removeValue(forKey key: Key) {
         cache.removeValue(forKey: key)
     }
-}
-
-#if canImport(UIKit)
-import UIKit
-#endif
-
-#if canImport(AppKit)
-import AppKit
-#endif
-
-extension Notification.Name {
-    static let willResignActiveNotification: Self = {
-#if canImport(AppKit)
-        return NSApplication.willResignActiveNotification
-#elseif canImport(UIKit)
-        return UIApplication.willResignActiveNotification
-#endif
-    }()
-
-    static let willTerminateNotification: Self = {
-#if canImport(AppKit)
-        return NSApplication.willTerminateNotification
-#elseif canImport(UIKit)
-        return UIApplication.willTerminateNotification
-#endif
-    }()
 }
 #endif
