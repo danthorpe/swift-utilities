@@ -6,10 +6,10 @@ import PackageDescription
 let package = Package(
     name: "Utilities",
     platforms: [
-        .macOS("10.15"),
-        .iOS("13.0"),
-        .tvOS("13.0"),
-        .watchOS("7.0")
+        .macOS(.v12),
+        .iOS(.v15),
+        .tvOS(.v15),
+        .watchOS(.v8)
     ],
     products: [
         .library(name: "Cache", targets: ["Cache"]),
@@ -26,6 +26,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "Cache", dependencies: [
+            "Concurrency",
             "EnvironmentProviders",
             .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             .product(name: "OrderedCollections", package: "swift-collections"),

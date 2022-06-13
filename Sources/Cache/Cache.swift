@@ -1,7 +1,10 @@
-import Foundation
+import AsyncAlgorithms
 import Combine
+import Concurrency
 import DequeModule
+import Foundation
 import OrderedCollections
+import os.log
 import EnvironmentProviders
 
 #if canImport(UIKit)
@@ -15,8 +18,12 @@ import AppKit
 public actor Cache<Key: Hashable, Value> {
     public typealias Storage = Dictionary<Key, CachedValue>
 
+    public enum EvictionEvent {
+        case memoryPressure, countLimit, valueExpiry
+    }
+
     public enum Event {
-        case willEvictCachedValues(Storage)
+        case willEvictCachedValues(Storage, reason: EvictionEvent)
         case shouldPersistCachedValues(Storage)
     }
 
@@ -30,15 +37,19 @@ public actor Cache<Key: Hashable, Value> {
 
     typealias Access = Deque<Key>
 
-    var limit: UInt
+    public var limit: UInt
+
+    var logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "works.dan.swift-utilities", category: "Cache")
+    var absoluteUpperLimit: UInt {
+        limit + max(10, UInt(Double(limit) * 0.1))
+    }
     var data: Storage
     var access: Access
-    var subject = PassthroughSubject<Event, Never>()
+    var eventDelegate = PassthroughSubject<Event, Never>()
+    var evictionsDelegate = PassthroughSubject<EvictionEvent, Never>()
 
-    @available(macOS 12.0, *)
-    @available(iOS 15.0, *)
-    public var events: some AsyncSequence {
-        subject.values
+    var evictions: some AsyncSequence {
+        evictionsDelegate.values
     }
 
     init<SystemEvents: AsyncSequence>(limit: UInt, data: Storage, didReciveSystemEvents stream: SystemEvents) where SystemEvents.Element == SystemEvent {
@@ -46,22 +57,15 @@ public actor Cache<Key: Hashable, Value> {
         self.data = data
         self.access = .init(data.keys)
         Task {
+            await handleEvictionEvents()
             await startReceivingSystemEvents(from: stream)
         }
     }
 
-    @available(macOS 12.0, *)
-    @available(iOS 15.0, *)
     public convenience init(limit: UInt, data: Storage) {
-        self.init(
-            limit: limit,
-            data: data,
-            didReciveSystemEvents: SystemEvent.publisher().values
-        )
+        self.init(limit: limit, data: data, didReciveSystemEvents: SystemEvent.publisher().values)
     }
 
-    @available(macOS 12.0, *)
-    @available(iOS 15.0, *)
     public convenience init(limit: UInt, items: Dictionary<Key, Value>, duration: TimeInterval) {
         self.init(
             limit: limit,
@@ -83,14 +87,41 @@ public actor Cache<Key: Hashable, Value> {
             for try await event in stream {
                 switch event {
                 case .applicationWillSuspend:
-                    print("application will suspend")
-                    subject.send(.shouldPersistCachedValues(data))
-                case let .applicationDidReceiveMemoryPressure(memoryPressureEvent):
-                    print("application did receive memory pressure: \(memoryPressureEvent)")
+                    eventDelegate.send(.shouldPersistCachedValues(data))
+                case .applicationDidReceiveMemoryPressure(.warning):
+                    evictionsDelegate.send(.memoryPressure)
+                case .applicationDidReceiveMemoryPressure(.normal):
+                    break
                 }
             }
         } catch {
-            print("TODO: Error receiving system events: \(error)")
+            logger.error("🗂 ⚠️ Caught error receiving system events: \(error)")
+        }
+    }
+
+    func handleEvictionEvents() async {
+        do {
+            for try await eviction in evictions {
+                if let eviction = eviction as? EvictionEvent {
+                    let countToRemove = calculateEvictionCount(from: eviction)
+                    let rangeToRemove = countToRemove..<access.endIndex
+                    evictCachedValues(forKeys: access[rangeToRemove], reason: eviction)
+                }
+            }
+        }
+        catch {
+            logger.error("🗂 ⚠️ Caught error handling eviction event: \(error)")
+        }
+    }
+
+    func calculateEvictionCount(from event: EvictionEvent) -> Int {
+        switch event {
+        case .memoryPressure:
+            return access.count / 2
+        case .countLimit:
+            return access.count - Int(limit)
+        case .valueExpiry:
+            return 1 // Not required to be calculated here, as eviction is key based.
         }
     }
 }
@@ -99,10 +130,10 @@ public actor Cache<Key: Hashable, Value> {
 extension Cache {
     public struct CachedValue {
         public let value: Value
-        public let cost: UInt?
+        public let cost: UInt64
         public let expirationDate: Date
 
-        init(value: Value, duration: TimeInterval, cost: UInt? = nil) {
+        init(value: Value, cost: UInt64 = 0, duration: TimeInterval) {
             self.value = value
             self.cost = cost
             self.expirationDate = DateProvider.now().addingTimeInterval(duration)
@@ -110,10 +141,15 @@ extension Cache {
     }
 }
 
+extension Cache.CachedValue: Codable where Value: Codable { }
 
 // MARK: - Public API
 
 public extension Cache {
+
+    var events: some AsyncSequence {
+        eventDelegate.values
+    }
 
     var count: Int {
         data.count
@@ -123,15 +159,15 @@ public extension Cache {
         cachedValue(forKey: key)?.value
     }
 
-    func insert(_ value: Value, duration: TimeInterval, forKey key: Key) {
-        insert(.init(value: value, duration: duration), forKey: key)
+    func insert(_ value: Value, forKey key: Key, cost: UInt64 = .zero, duration: TimeInterval) {
+        let cachedValue = CachedValue(value: value, cost: cost, duration: duration)
+        insertCachedValue(cachedValue, forKey: key, duration: duration)
     }
 
     func removeValue(forKey key: Key) {
-        data[key] = nil
+        removeCachedValue(forKey: key)
     }
 }
-
 
 // MARK: - Private API
 
@@ -147,18 +183,34 @@ private extension Cache {
         return cached
     }
 
-    func insert(_ cachedValue: CachedValue, forKey key: Key) {
+    func insertCachedValue(_ cachedValue: CachedValue, forKey key: Key, duration: TimeInterval) {
         data[key] = cachedValue
         updateAccess(for: key)
+        guard duration < 180 /* 3 minutes */ else { return }
+        Task {
+            try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+            evictCachedValues(forKeys: [key], reason: .valueExpiry)
+        }
     }
 
     func removeCachedValue(forKey key: Key) {
         data[key] = nil
+        removeAccess(for: key)
+    }
+
+    func evictCachedValues(forKeys keys: some Collection<Key>, reason event: EvictionEvent) {
+        let slice = data.slice(keys)
+        logger.info("🗂 Will evict \(keys.map(String.init(describing:))) due to: \(event.description)")
+        eventDelegate.send(.willEvictCachedValues(slice, reason: event))
+        slice.keys.forEach(removeCachedValue(forKey:))
     }
 
     func updateAccess(for key: Key) {
         removeAccess(for: key)
         access.insert(key, at: 0)
+        if access.count >= absoluteUpperLimit {
+            evictionsDelegate.send(.countLimit)
+        }
     }
 
     func removeAccess(for key: Key) {
@@ -194,8 +246,25 @@ extension Cache.SystemEvent {
                 center.publisher(for: .willTerminateNotification)
             )
             .map { _ in Cache.SystemEvent.applicationWillSuspend }
+        #if os(iOS)
+            .merge(with: center.publisher(for: UIApplication.didReceiveMemoryWarningNotification).map { _ in Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning) })
+        #endif
             .merge(with: subject.handleEvents(receiveSubscription: { _ in }))
             .eraseToAnyPublisher()
+    }
+}
+
+extension Cache.EvictionEvent: CustomStringConvertible {
+
+    public var description: String {
+        switch self {
+        case .memoryPressure:
+            return "Memory Pressure"
+        case .countLimit:
+            return "Count Limit"
+        case .valueExpiry:
+            return "Value Expiry"
+        }
     }
 }
 
@@ -215,4 +284,14 @@ extension Notification.Name {
         return UIApplication.willTerminateNotification
 #endif
     }()
+}
+
+extension Dictionary {
+    func slice(_ keys: some Collection<Key>) -> Dictionary<Key, Value> {
+        keys.reduce(into: Self()) { accumulator, key in
+            if let value = self[key] {
+                accumulator[key] = value
+            }
+        }
+    }
 }
