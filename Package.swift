@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "danthorpe-swift-utilities",
+    name: "danthorpe/swift-utilities",
     platforms: [
         .macOS(.v12),
         .iOS(.v15),
