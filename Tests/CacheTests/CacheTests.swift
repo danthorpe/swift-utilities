@@ -63,8 +63,8 @@ final class CacheTests: XCTestCase {
     // MARK: - Insertion
 
     func test__associative_access_basics() async {
-        await cache.insert("Hello", duration: 3_600, forKey: 0)
-        await cache.insert("World", duration: 3_600, forKey: 1)
+        await cache.insert("Hello", forKey: 0, duration: 3_600)
+        await cache.insert("World", forKey: 1, duration: 3_600)
         var count = await cache.count
         XCTAssertEqual(count, 2)
         var value = await cache.value(forKey: 2)
@@ -84,8 +84,8 @@ final class CacheTests: XCTestCase {
     // MARK: - Expiry
 
     func test__expired_values_are_removed_on_access() async {
-        await cache.insert("Hello", duration: -3_600, forKey: 0)
-        await cache.insert("World", duration: 3_600, forKey: 1)
+        await cache.insert("Hello", forKey: 0, duration: -3_600)
+        await cache.insert("World", forKey: 0, duration: 3_600)
         var count = await cache.count
         XCTAssertEqual(count, 2)
         let value = await cache.value(forKey: 0)
