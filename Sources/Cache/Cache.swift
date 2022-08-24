@@ -1,6 +1,6 @@
 import AsyncAlgorithms
 import Combine
-import Concurrency
+import Extensions
 import DequeModule
 import Foundation
 import OrderedCollections
@@ -62,11 +62,11 @@ public actor Cache<Key: Hashable, Value> {
         }
     }
 
-    public convenience init(limit: UInt, data: Storage) {
+    public init(limit: UInt, data: Storage) {
         self.init(limit: limit, data: data, didReciveSystemEvents: SystemEvent.publisher().values)
     }
 
-    public convenience init(limit: UInt, items: Dictionary<Key, Value>, duration: TimeInterval) {
+    public init(limit: UInt, items: Dictionary<Key, Value>, duration: TimeInterval) {
         self.init(
             limit: limit,
             data: items.reduce(into: Storage()) { storage, element in
@@ -78,7 +78,7 @@ public actor Cache<Key: Hashable, Value> {
 
     @available(macOS 12.0, *)
     @available(iOS 15.0, *)
-    public convenience init(limit: UInt) {
+    public init(limit: UInt) {
         self.init(limit: limit, data: .init(), didReciveSystemEvents: SystemEvent.publisher().values)
     }
 
@@ -188,7 +188,7 @@ private extension Cache {
         updateAccess(for: key)
         guard duration < 180 /* 3 minutes */ else { return }
         Task {
-            try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+            try await Task.sleep(seconds: duration)
             evictCachedValues(forKeys: [key], reason: .valueExpiry)
         }
     }

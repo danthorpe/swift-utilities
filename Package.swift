@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Utilities",
+    name: "danthorpe/swift-utilities",
     platforms: [
         .macOS(.v12),
         .iOS(.v15),
@@ -26,13 +26,14 @@ let package = Package(
     ],
     targets: [
         .target(name: "Cache", dependencies: [
-            "Concurrency",
+            "Extensions",
             "EnvironmentProviders",
             .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
             .product(name: "OrderedCollections", package: "swift-collections"),
             .product(name: "DequeModule", package: "swift-collections"),
         ]),
         .target(name: "Concurrency", dependencies: []),
+        .target(name: "Extensions", dependencies: []),
         .target(name: "EnvironmentProviders", dependencies: []),
         .target(name: "Reachability", dependencies: []),
         .target(name: "ReachabilityLive", dependencies: ["Reachability"]),
