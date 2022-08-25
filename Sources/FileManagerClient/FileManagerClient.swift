@@ -15,22 +15,26 @@ public struct FileManagerClient {
 
     public typealias CreateDirectoryAtURL = (URL, Bool, [FileAttributeKey: Any]?) throws -> Void
     public typealias RemoveItemAtURL = (URL) throws -> Void
+    public typealias FileExistsAtPath = (String) -> Bool
 
     public var url: LocateURLForDirectoryMask
     public var urls: LocateURLsForDirectoryMask
     public var createDirectoryAtURL: CreateDirectoryAtURL
     public var removeItemAtURL: RemoveItemAtURL
+    public var fileExistsAtPath: FileExistsAtPath
 
     public init(
         url: @escaping LocateURLForDirectoryMask,
         urls: @escaping LocateURLsForDirectoryMask,
         createDirectoryAtURL: @escaping CreateDirectoryAtURL,
-        removeItemAtURL: @escaping RemoveItemAtURL
+        removeItemAtURL: @escaping RemoveItemAtURL,
+        fileExistsAtPath: @escaping FileExistsAtPath
     ) {
         self.url = url
         self.urls = urls
         self.createDirectoryAtURL = createDirectoryAtURL
         self.removeItemAtURL = removeItemAtURL
+        self.fileExistsAtPath = fileExistsAtPath
     }
 
     public func url(
@@ -60,6 +64,10 @@ public struct FileManagerClient {
     public func removeItem(at url: URL) throws {
         try removeItemAtURL(url)
     }
+
+    public func fileExists(atPath path: String) -> Bool {
+        fileExistsAtPath(path)
+    }
 }
 
 // MARK: - Live
@@ -71,7 +79,8 @@ extension FileManagerClient {
             url: { try fileManager.url(for: $0, in: $1, appropriateFor: $2, create: $3) },
             urls: { fileManager.urls(for: $0, in: $1) },
             createDirectoryAtURL: { try fileManager.createDirectory(at: $0, withIntermediateDirectories: $1, attributes: $2) },
-            removeItemAtURL: { try fileManager.removeItem(at: $0) }
+            removeItemAtURL: { try fileManager.removeItem(at: $0) },
+            fileExistsAtPath: { fileManager.fileExists(atPath: $0) }
         )
     }()
 }
@@ -84,7 +93,8 @@ extension FileManagerClient {
         url: XCTUnimplemented("\(Self.self).url"),
         urls: XCTUnimplemented("\(Self.self).urls"),
         createDirectoryAtURL: XCTUnimplemented("\(Self.self).createDirectoryAtURL"),
-        removeItemAtURL: XCTUnimplemented("\(Self.self).removeItemAtURL")
+        removeItemAtURL: XCTUnimplemented("\(Self.self).removeItemAtURL"),
+        fileExistsAtPath: XCTUnimplemented("\(Self.self).fileExistsAtPath")
     )
 }
 
