@@ -85,7 +85,7 @@ final class CacheTests: XCTestCase {
 
     func test__expired_values_are_removed_on_access() async {
         await cache.insert("Hello", forKey: 0, duration: -3_600)
-        await cache.insert("World", forKey: 0, duration: 3_600)
+        await cache.insert("World", forKey: 1, duration: 3_600)
         var count = await cache.count
         XCTAssertEqual(count, 2)
         let value = await cache.value(forKey: 0)
