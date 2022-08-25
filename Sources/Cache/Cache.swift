@@ -186,7 +186,7 @@ private extension Cache {
     func insertCachedValue(_ cachedValue: CachedValue, forKey key: Key, duration: TimeInterval) {
         data[key] = cachedValue
         updateAccess(for: key)
-        guard duration < 180 /* 3 minutes */ else { return }
+        guard 0 < duration else { return }
         Task {
             try await Task.sleep(seconds: duration)
             evictCachedValues(forKeys: [key], reason: .valueExpiry)
