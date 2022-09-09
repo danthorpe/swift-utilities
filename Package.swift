@@ -18,13 +18,16 @@ package.products = [
     .library(name: "ReachabilityMocks", targets: ["ReachabilityMocks"]),
     .library(name: "ShortID", targets: ["ShortID"]),
     .library(name: "Utilities", targets: ["Cache", "ReachabilityLive", "ShortID"]),
+    .plugin(name: "SwiftFormatPlugin", targets: ["FormatCommand"])
 ]
 
 package.dependencies = [
+    .package(url: "https://github.com/apple/swift-argument-parser.git", branch: "main"),
     .package(url: "https://github.com/apple/swift-async-algorithms", branch: "main"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
+    .package(url: "https://github.com/apple/swift-format", branch: "main"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.2.1"),
-    .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.10.0")
+    .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.10.0"),
 ]
 
 package.targets = [
@@ -56,6 +59,20 @@ package.targets = [
 
     // MARK: - ShortID
     .target(name: "ShortID", dependencies: ["Concurrency"]),
+
+    // MARK: - Plugins
+    .plugin(
+        name: "FormatCommand",
+        capability: .command(
+            intent: .sourceCodeFormatting(),
+            permissions: [
+                .writeToPackageDirectory(reason: "This command reformats source files"),
+            ]
+        ),
+        dependencies: [
+            .product(name: "swift-format", package: "swift-format")
+        ]
+    ),
 
     // MARK: - Deprecated
     .target(name: "Concurrency", dependencies: []),
