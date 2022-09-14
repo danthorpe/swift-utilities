@@ -16,7 +16,7 @@ import AppKit
 #endif
 
 public actor Cache<Key: Hashable, Value> {
-    public typealias Storage = Dictionary<Key, CachedValue>
+    public typealias Storage = [Key: CachedValue]
 
     public enum EvictionEvent {
         case memoryPressure, countLimit, valueExpiry
@@ -52,7 +52,12 @@ public actor Cache<Key: Hashable, Value> {
         evictionsDelegate.values
     }
 
-    init<SystemEvents: AsyncSequence>(limit: UInt, data: Storage, didReciveSystemEvents stream: SystemEvents) where SystemEvents.Element == SystemEvent {
+    init<SystemEvents: AsyncSequence>(
+        limit: UInt,
+        data: Storage,
+        didReciveSystemEvents stream: SystemEvents
+    )
+    where SystemEvents.Element == SystemEvent {
         self.limit = limit
         self.data = data
         self.access = .init(data.keys)
@@ -66,7 +71,7 @@ public actor Cache<Key: Hashable, Value> {
         self.init(limit: limit, data: data, didReciveSystemEvents: SystemEvent.publisher().values)
     }
 
-    public init(limit: UInt, items: Dictionary<Key, Value>, duration: TimeInterval) {
+    public init(limit: UInt, items: [Key: Value], duration: TimeInterval) {
         self.init(
             limit: limit,
             data: items.reduce(into: Storage()) { storage, element in
@@ -82,7 +87,10 @@ public actor Cache<Key: Hashable, Value> {
         self.init(limit: limit, data: .init(), didReciveSystemEvents: SystemEvent.publisher().values)
     }
 
-    func startReceivingSystemEvents<SystemEvents: AsyncSequence>(from stream: SystemEvents) async where SystemEvents.Element == SystemEvent {
+    func startReceivingSystemEvents<SystemEvents: AsyncSequence>(
+        from stream: SystemEvents
+    ) async
+    where SystemEvents.Element == SystemEvent {
         do {
             for try await event in stream {
                 switch event {
@@ -108,8 +116,7 @@ public actor Cache<Key: Hashable, Value> {
                     evictCachedValues(forKeys: access[rangeToRemove], reason: eviction)
                 }
             }
-        }
-        catch {
+        } catch {
             logger.error("🗂 ⚠️ Caught error handling eviction event: \(error)")
         }
     }
@@ -220,7 +227,6 @@ private extension Cache {
     }
 }
 
-
 // MARK: - Other Implementation Details
 
 extension Cache.SystemEvent {
@@ -234,8 +240,7 @@ extension Cache.SystemEvent {
             event.formIntersection([.critical, .warning, .normal])
             if event.contains([.warning, .critical]) {
                 subject.send(.applicationDidReceiveMemoryPressure(.warning))
-            }
-            else {
+            } else {
                 subject.send(.applicationDidReceiveMemoryPressure(.normal))
             }
         }
@@ -247,7 +252,14 @@ extension Cache.SystemEvent {
             )
             .map { _ in Cache.SystemEvent.applicationWillSuspend }
         #if os(iOS)
-            .merge(with: center.publisher(for: UIApplication.didReceiveMemoryWarningNotification).map { _ in Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning) })
+            .merge(
+                with: center.publisher(
+                    for: UIApplication.didReceiveMemoryWarningNotification
+                )
+                .map { _ in
+                    Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning)
+                }
+            )
         #endif
             .merge(with: subject.handleEvents(receiveSubscription: { _ in }))
             .eraseToAnyPublisher()
@@ -287,7 +299,7 @@ extension Notification.Name {
 }
 
 extension Dictionary {
-    func slice(_ keys: some Collection<Key>) -> Dictionary<Key, Value> {
+    func slice(_ keys: some Collection<Key>) -> [Key: Value] {
         keys.reduce(into: Self()) { accumulator, key in
             if let value = self[key] {
                 accumulator[key] = value

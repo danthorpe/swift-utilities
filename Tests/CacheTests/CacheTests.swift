@@ -80,7 +80,6 @@ final class CacheTests: XCTestCase {
         XCTAssertNil(value)
     }
 
-
     // MARK: - Expiry
 
     func test__expired_values_are_removed_on_access() async {

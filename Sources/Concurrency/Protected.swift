@@ -129,8 +129,8 @@ extension Protected where Value: Collection {
         try read { try $0.firstIndex(where: predicate) }
     }
 
-    public func index(after i: Value.Index) -> Value.Index {
-        read { $0.index(after: i) }
+    public func index(after idx: Value.Index) -> Value.Index {
+        read { $0.index(after: idx) }
     }
 
     @inlinable public func randomElement() -> Value.Element? {

@@ -13,7 +13,11 @@ final class ProtectedTests: XCTestCase {
     }
 
     func checkThreadSafety(iterations: Int = 100, _ block: @escaping (Int) -> Void) {
-        let queue = DispatchQueue(label: "works.dan.Utilities.Concurrency.ProtectedTests", qos: .default, attributes: .concurrent)
+        let queue = DispatchQueue(
+            label: "works.dan.Utilities.Concurrency.ProtectedTests",
+            qos: .default,
+            attributes: .concurrent
+        )
         let group = DispatchGroup()
         let exp = expectation(description: "group")
         for iteration in 0..<iterations {
