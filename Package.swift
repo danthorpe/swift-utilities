@@ -18,7 +18,7 @@ package.products = [
     .library(name: "ReachabilityMocks", targets: ["ReachabilityMocks"]),
     .library(name: "ShortID", targets: ["ShortID"]),
     .library(name: "Utilities", targets: ["Cache", "ReachabilityLive", "ShortID"]),
-    .plugin(name: "SwiftFormatPlugin", targets: ["FormatCommand"])
+    .plugin(name: "SwiftLintPlugin", targets: ["SwiftLintPlugin"]),
 ]
 
 package.dependencies = [
@@ -28,18 +28,25 @@ package.dependencies = [
     .package(url: "https://github.com/apple/swift-format", branch: "main"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.2.1"),
     .package(url: "https://github.com/pointfreeco/swift-parsing.git", from: "0.10.0"),
+    .package(url: "https://github.com/realm/SwiftLint.git", from: "0.49.1")
 ]
 
 package.targets = [
 
     // MARK: - Cache
-    .target(name: "Cache", dependencies: [
-        "Extensions",
-        "EnvironmentProviders",
-        .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
-        .product(name: "OrderedCollections", package: "swift-collections"),
-        .product(name: "DequeModule", package: "swift-collections"),
-    ]),
+    .target(
+        name: "Cache",
+        dependencies: [
+            "Extensions",
+            "EnvironmentProviders",
+            .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+            .product(name: "OrderedCollections", package: "swift-collections"),
+            .product(name: "DequeModule", package: "swift-collections"),
+        ],
+        plugins: [
+            .plugin(name: "SwiftLintPlugin")
+        ]
+    ),
 
     // MARK: - Extensions
     .target(name: "Extensions"),
@@ -62,15 +69,10 @@ package.targets = [
 
     // MARK: - Plugins
     .plugin(
-        name: "FormatCommand",
-        capability: .command(
-            intent: .sourceCodeFormatting(),
-            permissions: [
-                .writeToPackageDirectory(reason: "This command reformats source files"),
-            ]
-        ),
+        name: "SwiftLintPlugin",
+        capability: .buildTool(),
         dependencies: [
-            .product(name: "swift-format", package: "swift-format")
+            .product(name: "swiftlint", package: "SwiftLint")
         ]
     ),
 
@@ -81,4 +83,7 @@ package.targets = [
     .testTarget(name: "CacheTests", dependencies: ["Cache"]),
     .testTarget(name: "ConcurrencyTests", dependencies: ["Concurrency"]),
     .testTarget(name: "ShortIDTests", dependencies: ["ShortID"]),
+
+    // MARK: - Binary Targets
+
 ]
