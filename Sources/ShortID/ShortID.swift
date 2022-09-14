@@ -46,7 +46,6 @@ public struct ShortID {
     }
 }
 
-
 extension ShortID.Strategy {
 
     private struct Base62Generator: RandomCharacterGenerator {

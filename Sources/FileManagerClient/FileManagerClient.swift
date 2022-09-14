@@ -78,7 +78,13 @@ extension FileManagerClient {
         return Self(
             url: { try fileManager.url(for: $0, in: $1, appropriateFor: $2, create: $3) },
             urls: { fileManager.urls(for: $0, in: $1) },
-            createDirectoryAtURL: { try fileManager.createDirectory(at: $0, withIntermediateDirectories: $1, attributes: $2) },
+            createDirectoryAtURL: {
+                try fileManager.createDirectory(
+                    at: $0,
+                    withIntermediateDirectories: $1,
+                    attributes: $2
+                )
+            },
             removeItemAtURL: { try fileManager.removeItem(at: $0) },
             fileExistsAtPath: { fileManager.fileExists(atPath: $0) }
         )
@@ -97,4 +103,3 @@ extension FileManagerClient {
         fileExistsAtPath: XCTUnimplemented("\(Self.self).fileExistsAtPath")
     )
 }
-
