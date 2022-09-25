@@ -1,31 +1,26 @@
-reporter: "xcode"
-
-disabled_rules:
-  - multiple_closures_with_trailing_closure
-
-opt_in_rules:
-  - empty_count
-
-analyzer_rules:
+--- 
+analyzer_rules: 
   - explicit_self
-
-vertical_whitespace:
-  max_empty_lines: 2
-  
-nesting:
-  type_level:
-    warning: 4
-    error: 6
-  statement_level:
-    warning: 4
-    error: 8
-	
-identifier_name:
-  allowed_symbols: "_"
-  min_length: 2
+disabled_rules: 
+  - multiple_closures_with_trailing_closure
+identifier_name: 
+  allowed_symbols: _
+  excluded: 
+    - id
+    - ok
   max_length: 
-    warning: 90
     error: 1000
-  excluded:
-	- id
-	- ok
+    warning: 90
+  min_length: 2
+nesting: 
+  function_level: 
+    error: 8
+    warning: 4
+  type_level: 
+    error: 6
+    warning: 4
+opt_in_rules: 
+  - empty_count
+reporter: xcode
+vertical_whitespace: 
+  max_empty_lines: 2
