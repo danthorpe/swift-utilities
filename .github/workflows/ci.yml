@@ -39,4 +39,4 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Test
-        run: scripts/ci-test.sh
+        run: .scripts/ci-test.sh
