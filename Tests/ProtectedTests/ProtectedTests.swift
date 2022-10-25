@@ -1,4 +1,4 @@
-@testable import Concurrency
+@testable import Protected
 import XCTest
 
 @available(iOS 13.0, *)
@@ -14,7 +14,7 @@ final class ProtectedTests: XCTestCase {
 
     func checkThreadSafety(iterations: Int = 100, _ block: @escaping (Int) -> Void) {
         let queue = DispatchQueue(
-            label: "works.dan.Utilities.Concurrency.ProtectedTests",
+            label: "works.dan.Utilities.ProtectedTests",
             qos: .default,
             attributes: .concurrent
         )
