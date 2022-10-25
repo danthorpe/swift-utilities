@@ -18,17 +18,16 @@ package.dependencies = [
     .package(url: "https://github.com/apple/swift-argument-parser.git", branch: "main"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
     .package(url: "https://github.com/danthorpe/danthorpe-plugins", branch: "main"),
-    .package(url: "https://github.com/pointfreeco/combine-schedulers", from: "0.8.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "0.44.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
 ]
 
 // MARK: - Name
 let Cache = "Cache"
-let Concurrency = "Concurrency"
 let EnvironmentProviders = "EnvironmentProviders"
 let Extensions = "Extensions"
 let FileManagerClient = "FileManagerClient"
+let Protected = "Protected"
 let Reachability = "Reachability"
 let ShortID = "ShortID"
 let Utilities = "Utilities"
@@ -45,6 +44,7 @@ package.products = [
     .library(name: Cache, targets: [Cache]),
     .library(name: EnvironmentProviders, targets: [EnvironmentProviders]),
     .library(name: FileManagerClient, targets: [FileManagerClient]),
+    .library(name: Protected, targets: [Protected]),
     .library(name: Reachability, targets: [Reachability]),
     .library(name: ShortID, targets: [ShortID]),
 ]
@@ -65,12 +65,12 @@ extension Target {
         name: Cache.tests,
         dependencies: [ .cache ]
     )
-    static let concurrency: Target = .target(
-        name: Concurrency
+    static let protected: Target = .target(
+        name: Protected
     )
-    static let concurrencyTests: Target = .testTarget(
-        name: Concurrency.tests,
-        dependencies: [ .concurrency ]
+    static let protectedTests: Target = .testTarget(
+        name: Protected.tests,
+        dependencies: [ .protected ]
     )
     static let extensions: Target = .target(
         name: Extensions
@@ -88,7 +88,7 @@ extension Target {
     )
     static let shortID: Target = .target(
         name: ShortID,
-        dependencies: [ .dependencies, .concurrency ]
+        dependencies: [ .dependencies, .protected ]
     )
     static let shortIDTests: Target = .testTarget(
         name: ShortID.tests,
@@ -99,8 +99,8 @@ extension Target {
 package.targets = [
     .cache,
     .cacheTests,
-    .concurrency,
-    .concurrencyTests,
+    .protected,
+    .protectedTests,
     .extensions,
     .environmentProviders,
     .fileManagerClient,
@@ -116,8 +116,8 @@ extension Target.Dependency {
     static let cache: Target.Dependency = .target(
         name: Cache
     )
-    static let concurrency: Target.Dependency = .target(
-        name: Concurrency
+    static let protected: Target.Dependency = .target(
+        name: Protected
     )
     static let extensions: Target.Dependency = .target(
         name: Extensions

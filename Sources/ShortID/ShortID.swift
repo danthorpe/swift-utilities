@@ -1,6 +1,6 @@
 import Dependencies
 import Foundation
-import Concurrency
+import Protected
 import XCTestDynamicOverlay
 
 /// A `ShortID` value is like a `UUID` except that it has fewer characters,
