@@ -14,6 +14,7 @@ import UIKit
 import AppKit
 #endif
 
+@available(iOS 15.0, *)
 public actor Cache<Key: Hashable, Value> {
     public typealias Storage = [Key: CachedValue]
 
@@ -133,6 +134,7 @@ public actor Cache<Key: Hashable, Value> {
 }
 
 // MARK: - Nested Types
+@available(iOS 15.0, *)
 extension Cache {
     public struct CachedValue {
         public let value: Value
@@ -147,10 +149,12 @@ extension Cache {
     }
 }
 
+@available(iOS 15.0, *)
 extension Cache.CachedValue: Codable where Value: Codable { }
 
 // MARK: - Public API
 
+@available(iOS 15.0, *)
 public extension Cache {
 
     var events: some AsyncSequence {
@@ -177,6 +181,7 @@ public extension Cache {
 
 // MARK: - Private API
 
+@available(iOS 15.0, *)
 private extension Cache {
 
     func cachedValue(forKey key: Key) -> CachedValue? {
@@ -228,6 +233,7 @@ private extension Cache {
 
 // MARK: - Other Implementation Details
 
+@available(iOS 15.0, *)
 extension Cache.SystemEvent {
 
     static func publisher(notificationCenter center: NotificationCenter = .default) -> AnyPublisher<Self, Never> {
@@ -265,6 +271,7 @@ extension Cache.SystemEvent {
     }
 }
 
+@available(iOS 15.0, *)
 extension Cache.EvictionEvent: CustomStringConvertible {
 
     public var description: String {
