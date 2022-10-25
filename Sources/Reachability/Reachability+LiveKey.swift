@@ -1,7 +1,7 @@
 import Combine
+import Dependencies
 import Foundation
 import Network
-import Reachability
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
@@ -50,4 +50,8 @@ extension Reachability.Path {
     init(rawValue: NWPath) {
         self.init(status: .init(rawValue: rawValue.status))
     }
+}
+
+extension Reachability: DependencyKey {
+    static public let liveValue: Reachability = .live
 }

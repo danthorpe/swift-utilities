@@ -1,6 +1,7 @@
 import Combine
+import Dependencies
 import Foundation
-import Reachability
+import XCTestDynamicOverlay
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
@@ -31,4 +32,9 @@ public extension Reachability {
             .map { Path(status: $0) }
             .eraseToAnyPublisher()
     )
+}
+
+extension Reachability: TestDependencyKey {
+    static public let testValue: Reachability = .satisfied
+    static public let previewValue: Reachability = .unsatisfied
 }
