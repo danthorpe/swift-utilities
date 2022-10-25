@@ -17,7 +17,7 @@ package.platforms = [
 package.dependencies = [
     .package(url: "https://github.com/apple/swift-argument-parser.git", branch: "main"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
-    .package(url: "https://github.com/danthorpe/danthorpe-plugins", branch: "main"),
+    .package(url: "https://github.com/danthorpe/danthorpe-plugins", from: "0.2.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "0.44.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
 ]
