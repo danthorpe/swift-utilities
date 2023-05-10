@@ -16,7 +16,7 @@ package.platforms = [
 // MARK: - 🧸 Module Names
 
 let Cache = "Cache"
-let EnvironmentProviders = "EnvironmentProviders"
+let DependencyValues = "DependencyValues"
 let Extensions = "Extensions"
 let FileManagerClient = "FileManagerClient"
 let Protected = "Protected"
@@ -44,8 +44,7 @@ let 📦 = Module.builder(
 
 Cache <+ 📦 {
     $0.dependsOn = [
-        Extensions,
-        EnvironmentProviders
+        Extensions
     ]
     $0.with = [
         .deque,
@@ -56,7 +55,7 @@ Protected <+ 📦 { _ in }
 Extensions <+ 📦 {
     $0.createUnitTests = false
 }
-EnvironmentProviders <+ 📦 {
+DependencyValues <+ 📦 {
     $0.createUnitTests = false
 }
 FileManagerClient <+ 📦 {

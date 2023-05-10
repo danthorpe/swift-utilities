@@ -5,7 +5,6 @@ import DequeModule
 import Foundation
 import OrderedCollections
 import os.log
-import EnvironmentProviders
 
 #if canImport(UIKit)
 import UIKit
