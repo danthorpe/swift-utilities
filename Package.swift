@@ -36,7 +36,7 @@ let 📦 = Module.builder(
             .xcTestDynamicOverlay
         ],
         unitTestsDependsOn: [ ],
-        plugins: [ ]
+        plugins: [ .swiftLint ]
     )
 )
 
@@ -71,26 +71,40 @@ ShortID <+ 📦 {
     ]
 }
 
+
+/// ✨ These are all special case targets, such as plugins
+/// ------------------------------------------------------------
+
+// MARK: - 🧮 Binary Targets & Plugins
+
+extension Target.PluginUsage {
+    static let swiftLint: Self = .plugin(
+        name: "SwiftLintPlugin", package: "SwiftLint"
+    )
+}
+
+
 /// 👜 Define 3rd party dependencies. Associate these dependencies
 /// with modules using `$0.with = [ ]` property
 /// ------------------------------------------------------------
 
 // MARK: - 👜 3rd Party Dependencies
 
-/// ✨ TCA and redeclared intrinsic deps. Correlate versions when bumping TCA.
+/// ✨ PF/TCA and redeclared intrinsic deps. Correlate versions when bumping TCA.
 /// ------------------------------------------------------------
 package.dependencies = [
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.1.2"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.4.2"),
+    .package(url: "https://github.com/pointfreeco/swift-tagged", exact: "0.10.0"),
     .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
 ]
 
 /// ✨ Independent 3rd party deps
 /// ------------------------------------------------------------
 package.dependencies += [
-    .package(url: "https://github.com/apple/swift-argument-parser.git", branch: "main"),
+    .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
     .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
-    .package(url: "https://github.com/pointfreeco/swift-tagged", exact: "0.10.0"),
+    .package(url: "https://github.com/realm/SwiftLint.git", from: "0.51.0")
 ]
 
 extension Target.Dependency {
