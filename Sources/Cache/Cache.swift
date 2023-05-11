@@ -1,10 +1,10 @@
 import Combine
+import Dependencies
 import Extensions
 import DequeModule
 import Foundation
 import OrderedCollections
 import os.log
-import EnvironmentProviders
 
 #if canImport(UIKit)
 import UIKit
@@ -52,6 +52,8 @@ public actor Cache<Key: Hashable, Value> {
         evictionsDelegate.values
     }
 
+    @Dependency(\.date) private var date
+
     init<SystemEvents: AsyncSequence>(
         limit: UInt,
         data: Storage,
@@ -75,7 +77,7 @@ public actor Cache<Key: Hashable, Value> {
         self.init(
             limit: limit,
             data: items.reduce(into: Storage()) { storage, element in
-                storage[element.key] = CachedValue(value: element.value, duration: duration)
+                storage[element.key] = CachedValue.with(value: element.value, duration: duration)
             },
             didReciveSystemEvents: SystemEvent.publisher().values
         )
@@ -141,10 +143,19 @@ extension Cache {
         public let cost: UInt64
         public let expirationDate: Date
 
-        init(value: Value, cost: UInt64 = 0, duration: TimeInterval) {
+        init(value: Value, cost: UInt64, expirationDate: Date) {
             self.value = value
             self.cost = cost
-            self.expirationDate = DateProvider.now().addingTimeInterval(duration)
+            self.expirationDate = expirationDate
+        }
+
+        static func with(value: Value, cost: UInt64 = 0, duration: TimeInterval) -> Self {
+            @Dependency(\.date) var date
+            return Self(
+                value: value,
+                cost: cost,
+                expirationDate: date().addingTimeInterval(duration)
+            )
         }
     }
 }
@@ -170,7 +181,7 @@ public extension Cache {
     }
 
     func insert(_ value: Value, forKey key: Key, cost: UInt64 = .zero, duration: TimeInterval) {
-        let cachedValue = CachedValue(value: value, cost: cost, duration: duration)
+        let cachedValue = CachedValue.with(value: value, cost: cost, duration: duration)
         insertCachedValue(cachedValue, forKey: key, duration: duration)
     }
 
@@ -186,7 +197,7 @@ private extension Cache {
 
     func cachedValue(forKey key: Key) -> CachedValue? {
         guard let cached = data[key] else { return nil }
-        guard DateProvider.now() < cached.expirationDate else {
+        guard date() < cached.expirationDate else {
             removeCachedValue(forKey: key)
             return nil
         }
@@ -199,7 +210,9 @@ private extension Cache {
         updateAccess(for: key)
         guard 0 < duration else { return }
         Task {
-            try await Task.sleep(seconds: duration)
+            do {
+                try await Task.sleep(seconds: duration)
+            } catch { /* no-op */ }
             evictCachedValues(forKeys: [key], reason: .valueExpiry)
         }
     }
