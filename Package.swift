@@ -16,7 +16,6 @@ package.platforms = [
 // MARK: - 🧸 Module Names
 
 let Cache = "Cache"
-let DependencyValues = "DependencyValues"
 let Extensions = "Extensions"
 let FileManagerClient = "FileManagerClient"
 let Protected = "Protected"
@@ -36,7 +35,7 @@ let 📦 = Module.builder(
             .xcTestDynamicOverlay
         ],
         unitTestsDependsOn: [ ],
-        plugins: [ .swiftLint ]
+        plugins: []
     )
 )
 
@@ -52,12 +51,7 @@ Cache <+ 📦 {
     ]
 }
 Protected <+ 📦 { _ in }
-Extensions <+ 📦 {
-    $0.createUnitTests = false
-}
-DependencyValues <+ 📦 {
-    $0.createUnitTests = false
-}
+Extensions <+ 📦 { _ in }
 FileManagerClient <+ 📦 {
     $0.createUnitTests = false
 }
@@ -77,9 +71,9 @@ ShortID <+ 📦 {
 // MARK: - 🧮 Binary Targets & Plugins
 
 extension Target.PluginUsage {
-    static let swiftLint: Self = .plugin(
-        name: "SwiftLintPlugin", package: "SwiftLint"
-    )
+//    static let swiftLint: Self = .plugin(
+//        name: "SwiftLintPlugin", package: "SwiftLint"
+//    )
 }
 
 
@@ -102,8 +96,7 @@ package.dependencies = [
 /// ------------------------------------------------------------
 package.dependencies += [
     .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
-    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
-    .package(url: "https://github.com/realm/SwiftLint.git", from: "0.51.0")
+    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2")
 ]
 
 extension Target.Dependency {

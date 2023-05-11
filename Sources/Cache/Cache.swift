@@ -52,6 +52,8 @@ public actor Cache<Key: Hashable, Value> {
         evictionsDelegate.values
     }
 
+    @Dependency(\.date) private var date
+
     init<SystemEvents: AsyncSequence>(
         limit: UInt,
         data: Storage,
@@ -195,7 +197,7 @@ private extension Cache {
 
     func cachedValue(forKey key: Key) -> CachedValue? {
         guard let cached = data[key] else { return nil }
-        guard DateProvider.now() < cached.expirationDate else {
+        guard date() < cached.expirationDate else {
             removeCachedValue(forKey: key)
             return nil
         }
@@ -208,7 +210,9 @@ private extension Cache {
         updateAccess(for: key)
         guard 0 < duration else { return }
         Task {
-            try await Task.sleep(seconds: duration)
+            do {
+                try await Task.sleep(seconds: duration)
+            } catch { /* no-op */ }
             evictCachedValues(forKeys: [key], reason: .valueExpiry)
         }
     }
