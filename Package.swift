@@ -35,7 +35,7 @@ let 📦 = Module.builder(
             .xcTestDynamicOverlay
         ],
         unitTestsDependsOn: [ ],
-        plugins: []
+        plugins: [ .swiftLint ]
     )
 )
 
@@ -71,9 +71,9 @@ ShortID <+ 📦 {
 // MARK: - 🧮 Binary Targets & Plugins
 
 extension Target.PluginUsage {
-//    static let swiftLint: Self = .plugin(
-//        name: "SwiftLintPlugin", package: "SwiftLint"
-//    )
+    static let swiftLint: Self = .plugin(
+        name: "SwiftLintPlugin", package: "danthorpe-swiftlint-plugin"
+    )
 }
 
 
@@ -95,8 +95,9 @@ package.dependencies = [
 /// ✨ Independent 3rd party deps
 /// ------------------------------------------------------------
 package.dependencies += [
-    .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.2.2"),
-    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2")
+    .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
+    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
+    .package(url: "https://github.com/danthorpe/danthorpe-swiftlint-plugin", branch: "main")
 ]
 
 extension Target.Dependency {
@@ -269,7 +270,8 @@ extension Package {
                     name: module.name.tests,
                     dependencies: [module.name.dependency] + module.unitTestsDependsOn.map { $0.dependency } +
                     module.unitTestsWith + [.customDump],
-                    path: path
+                    path: path,
+                    plugins: module.plugins
                 )
             )
         }
@@ -283,7 +285,8 @@ extension Package {
                     module.snapshotTestsDependsOn.map { $0.dependency } + [
                         .customDump
                     ],
-                    path: path
+                    path: path,
+                    plugins: module.plugins
                 )
             )
         }
