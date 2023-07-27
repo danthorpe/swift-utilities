@@ -1,4 +1,4 @@
-// swift-tools-version: 5.7
+// swift-tools-version: 5.8
 import PackageDescription
 
 var package = Package(name: "danthorpe-utilities")
@@ -42,6 +42,7 @@ let 📦 = Module.builder(
 // MARK: - 🎯 Targets
 
 Cache <+ 📦 {
+    $0.createProduct = .library(nil)
     $0.dependsOn = [
         Extensions
     ]
@@ -50,15 +51,22 @@ Cache <+ 📦 {
         .orderedCollections
     ]
 }
-Protected <+ 📦 { _ in }
-Extensions <+ 📦 { _ in }
+Protected <+ 📦 {
+    $0.createProduct = .library(nil)
+}
+Extensions <+ 📦 {
+    $0.createProduct = .library(nil)
+}
 FileManagerClient <+ 📦 {
+    $0.createProduct = .library(nil)
     $0.createUnitTests = false
 }
 Reachability <+ 📦 {
+    $0.createProduct = .library(nil)
     $0.createUnitTests = false
 }
 ShortID <+ 📦 {
+    $0.createProduct = .library(nil)
     $0.dependsOn = [
         Protected
     ]
