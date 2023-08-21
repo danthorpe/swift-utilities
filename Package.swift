@@ -94,10 +94,10 @@ extension Target.PluginUsage {
 /// ✨ PF/TCA and redeclared intrinsic deps. Correlate versions when bumping TCA.
 /// ------------------------------------------------------------
 package.dependencies = [
-    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.7.0"),
-    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "0.4.2"),
+    .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-tagged", exact: "0.10.0"),
-    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "0.5.0"),
+    .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.0.0"),
 ]
 
 /// ✨ Independent 3rd party deps
