@@ -15,6 +15,7 @@ package.platforms = [
 
 // MARK: - 🧸 Module Names
 
+let AssertionExtras = "AssertionExtras"
 let Cache = "Cache"
 let Extensions = "Extensions"
 let FileManagerClient = "FileManagerClient"
@@ -41,6 +42,16 @@ let 📦 = Module.builder(
 
 // MARK: - 🎯 Targets
 
+AssertionExtras <+ 📦 {
+    $0.createProduct = .library(nil)
+    $0.createUnitTests = false
+    $0.dependsOn = [
+        Extensions
+    ]
+    $0.with = [
+        .customDump
+    ]
+}
 Cache <+ 📦 {
     $0.createProduct = .library(nil)
     $0.dependsOn = [

@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Cache"
-               BuildableName = "Cache"
-               BlueprintName = "Cache"
+               BlueprintIdentifier = "AssertionExtras"
+               BuildableName = "AssertionExtras"
+               BlueprintName = "AssertionExtras"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "EnvironmentProviders"
-               BuildableName = "EnvironmentProviders"
-               BlueprintName = "EnvironmentProviders"
+               BlueprintIdentifier = "Cache"
+               BuildableName = "Cache"
+               BlueprintName = "Cache"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -126,6 +126,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "ExtensionsTests"
+               BuildableName = "ExtensionsTests"
+               BlueprintName = "ExtensionsTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "ProtectedTests"
                BuildableName = "ProtectedTests"
                BlueprintName = "ProtectedTests"
@@ -143,20 +157,6 @@
                BlueprintIdentifier = "ShortIDTests"
                BuildableName = "ShortIDTests"
                BlueprintName = "ShortIDTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DependencyValues"
-               BuildableName = "DependencyValues"
-               BlueprintName = "DependencyValues"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
