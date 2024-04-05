@@ -143,12 +143,6 @@ extension Cache {
         public let cost: UInt64
         public let expirationDate: Date
 
-        init(value: Value, cost: UInt64, expirationDate: Date) {
-            self.value = value
-            self.cost = cost
-            self.expirationDate = expirationDate
-        }
-
         static func with(value: Value, cost: UInt64 = 0, duration: TimeInterval) -> Self {
             @Dependency(\.date) var date
             return Self(
