@@ -35,8 +35,7 @@ let 📦 = Module.builder(
             .tagged,
             .xcTestDynamicOverlay
         ],
-        unitTestsDependsOn: [ ],
-        plugins: [ .swiftLint ]
+        unitTestsDependsOn: [ ]
     )
 )
 
@@ -83,19 +82,6 @@ ShortID <+ 📦 {
     ]
 }
 
-
-/// ✨ These are all special case targets, such as plugins
-/// ------------------------------------------------------------
-
-// MARK: - 🧮 Binary Targets & Plugins
-
-extension Target.PluginUsage {
-    static let swiftLint: Self = .plugin(
-        name: "SwiftLintPlugin", package: "danthorpe-swiftlint-plugin"
-    )
-}
-
-
 /// 👜 Define 3rd party dependencies. Associate these dependencies
 /// with modules using `$0.with = [ ]` property
 /// ------------------------------------------------------------
@@ -115,8 +101,7 @@ package.dependencies = [
 /// ------------------------------------------------------------
 package.dependencies += [
     .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
-    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
-    .package(url: "https://github.com/danthorpe/danthorpe-swiftlint-plugin", from: "0.1.0")
+    .package(url: "https://github.com/apple/swift-collections", from: "1.0.2")
 ]
 
 extension Target.Dependency {
