@@ -7,4 +7,4 @@ xcodebuild test \
   -sdk iphonesimulator \
   -derivedDataPath .build \
   -skipPackagePluginValidation \
-  -destination "platform=iOS Simulator,name=iPhone 14 Pro" 
+  -destination "platform=iOS Simulator,name=iPhone 14 Pro"
