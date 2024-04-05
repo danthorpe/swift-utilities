@@ -10,15 +10,6 @@
       }
     },
     {
-      "identity" : "danthorpe-swiftlint-plugin",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/danthorpe/danthorpe-swiftlint-plugin",
-      "state" : {
-        "revision" : "5fc8c94a1ebf4f459b27a12a0720f29ee9a41499",
-        "version" : "0.1.0"
-      }
-    },
-    {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-argument-parser.git",
