@@ -1,7 +1,7 @@
 // swift-tools-version: 5.8
 import PackageDescription
 
-var package = Package(name: "danthorpe-utilities")
+var package = Package(name: "swift-utilities")
 
 // MARK: 💫 Package Customization
 
