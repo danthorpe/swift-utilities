@@ -69,8 +69,6 @@ final class UnfairLock: Lock, Lockable {
 /// within a struct, use the $ syntatic-sugar to access
 /// the projected value, and then use the read or write
 /// methods.
-///
-/// For collections,
 @propertyWrapper
 @dynamicMemberLookup
 public final class Protected<Value> {
