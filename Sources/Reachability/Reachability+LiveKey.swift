@@ -5,53 +5,54 @@ import Network
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
-public extension Reachability {
+extension Reachability {
 
-    static let live = live(queue: .main)
+  public static let live = live(queue: .main)
 
-    static func live(queue: DispatchQueue) -> Self {
-        let monitor = NWPathMonitor()
-        let subject = PassthroughSubject<NWPath, Never>()
-        monitor.pathUpdateHandler = subject.send
+  public static func live(queue: DispatchQueue) -> Self {
+    let monitor = NWPathMonitor()
+    let subject = PassthroughSubject<NWPath, Never>()
+    monitor.pathUpdateHandler = subject.send
 
-        return Self(
-            monitor: subject
-                .handleEvents(
-                    receiveSubscription: { _ in monitor.start(queue: queue) },
-                    receiveCancel: monitor.cancel
-                )
-                .map(Reachability.Path.init(rawValue:))
-                .removeDuplicates()
-                .eraseToAnyPublisher()
+    return Self(
+      monitor:
+        subject
+        .handleEvents(
+          receiveSubscription: { _ in monitor.start(queue: queue) },
+          receiveCancel: monitor.cancel
         )
-    }
+        .map(Reachability.Path.init(rawValue:))
+        .removeDuplicates()
+        .eraseToAnyPublisher()
+    )
+  }
 }
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
 extension Reachability.Path.Status {
-    init(rawValue: NWPath.Status) {
-        switch rawValue {
-        case .satisfied:
-            self = .satisfied
-        case .unsatisfied:
-            self = .unsatisfied
-        case .requiresConnection:
-            self = .requiresConnection
-        @unknown default:
-            fatalError()
-        }
+  init(rawValue: NWPath.Status) {
+    switch rawValue {
+    case .satisfied:
+      self = .satisfied
+    case .unsatisfied:
+      self = .unsatisfied
+    case .requiresConnection:
+      self = .requiresConnection
+    @unknown default:
+      fatalError()
     }
+  }
 }
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
 extension Reachability.Path {
-    init(rawValue: NWPath) {
-        self.init(status: .init(rawValue: rawValue.status))
-    }
+  init(rawValue: NWPath) {
+    self.init(status: .init(rawValue: rawValue.status))
+  }
 }
 
 extension Reachability: DependencyKey {
-    static public let liveValue: Reachability = .live
+  static public let liveValue: Reachability = .live
 }
