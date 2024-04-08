@@ -61,7 +61,7 @@
     "UseSynthesizedInitializer" : true,
     "UseTripleSlashForDocumentationComments" : true,
     "UseWhereClausesInForLoops" : true,
-    "ValidateDocumentationComments" : false
+    "ValidateDocumentationComments" : true
   },
   "spacesAroundRangeFormationOperators" : true,
   "tabWidth" : 4,

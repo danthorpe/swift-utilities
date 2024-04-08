@@ -1,14 +1,22 @@
-import Dependencies
 import Foundation
 import Protected
-import XCTestDynamicOverlay
 
 /// A `ShortID` value is like a `UUID` except that it has fewer characters,
-/// and is not globally unique. This is useful when you wish to have locally
-/// unique values which are less verbose.
+///  and is locally-unique instead of globally unique. This is useful when
+///  you wish to have more-or-less unique values which are much less verbose.
 public struct ShortID: Sendable {
   public enum Strategy {
-    case base62, base36
+
+    /// Generates 6-character long ShortIDs using Base62
+    ///  character set (i.e. base 64 but with + and / removed),
+    ///  which is the upper and lower-case Roman alphabet
+    ///  characters (A-Z, a-z) and the numerals 0-9.
+    case base62
+
+    /// Generates 7-character long ShortIDs using Base36
+    ///  character set, which is the lower-case Roman alphabet
+    ///  and the numerals 0-9.
+    case base36
   }
 
   private let value: String
@@ -17,6 +25,8 @@ public struct ShortID: Sendable {
     self.value = value
   }
 
+  /// Create a new ShortID based on a specific strategy
+  /// - Parameter strategy: the ``Strategy`` to use, defaults to .base62
   public init(_ strategy: Strategy = .base62) {
     self.init(value: strategy.generate())
   }
@@ -32,45 +42,6 @@ extension ShortID: CustomStringConvertible {
 
 extension ShortID: CustomDebugStringConvertible {
   public var debugDescription: String { value.debugDescription }
-}
-
-extension DependencyValues {
-
-  public var shortID: ShortIDGenerator {
-    get { self[ShortIDGeneratorKey.self] }
-    set { self[ShortIDGeneratorKey.self] = newValue }
-  }
-
-  private enum ShortIDGeneratorKey: DependencyKey {
-    static let liveValue = ShortIDGenerator { ShortID() }
-    static let testValue = ShortIDGenerator {
-      XCTFail(#"Unimplemented: @Dependency(\.shortId)"#)
-      return ShortID()
-    }
-    static let previewValue = ShortIDGenerator.constant(ShortID())
-  }
-}
-
-/// A dependency which generates a `ShortID`
-public struct ShortIDGenerator {
-  private let generate: @Sendable () -> ShortID
-
-  public static func constant(_ shortID: ShortID) -> Self {
-    Self { shortID }
-  }
-
-  public static var incrementing: Self {
-    let generator = IncrementingGenerator()
-    return Self { generator() }
-  }
-
-  public init(_ generate: @escaping @Sendable () -> ShortID) {
-    self.generate = generate
-  }
-
-  public func callAsFunction() -> ShortID {
-    generate()
-  }
 }
 
 // MARK: Random Character Generator
@@ -159,21 +130,5 @@ extension ShortID.Strategy {
     case .base36:
       return Base36Generator.shared.generate()
     }
-  }
-}
-
-private struct IncrementingGenerator: @unchecked Sendable {
-
-  @Protected
-  var sequence: Int = 0
-
-  func callAsFunction() -> ShortID {
-    ShortID(
-      value: String(
-        format: "%06x",
-        $sequence.write {
-          $0 += 1
-          return $0
-        }))
   }
 }
