@@ -100,8 +100,6 @@ package.dependencies = [
   .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
   .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
   .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
-  .package(url: "https://github.com/pointfreeco/swift-tagged", exact: "0.10.0"),
-  .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.0.0"),
 ]
 
 extension Target.Dependency {
