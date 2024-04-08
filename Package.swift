@@ -30,11 +30,7 @@ let 📦 = Module.builder(
   withDefaults: .init(
     name: "Basic Module",
     dependsOn: [],
-    defaultWith: [
-      .dependencies,
-      .tagged,
-      .xcTestDynamicOverlay,
-    ],
+    defaultWith: [],
     unitTestsDependsOn: []
   )
 )
@@ -43,7 +39,7 @@ let 📦 = Module.builder(
 
 AssertionExtras
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
     $0.createUnitTests = false
     $0.dependsOn = [
       Extensions
@@ -54,7 +50,7 @@ AssertionExtras
   }
 Cache
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
     $0.dependsOn = [
       Extensions
     ]
@@ -65,27 +61,30 @@ Cache
   }
 Protected
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
   }
 Extensions
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
   }
 FileManagerClient
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
     $0.createUnitTests = false
   }
 Reachability
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
     $0.createUnitTests = false
   }
 ShortID
   <+ 📦 {
-    $0.createProduct = .library(nil)
+    $0.createProduct = .library
     $0.dependsOn = [
       Protected
+    ]
+    $0.with = [
+      .dependencies
     ]
   }
 
@@ -95,20 +94,14 @@ ShortID
 
 // MARK: - 👜 3rd Party Dependencies
 
-/// ✨ PF/TCA and redeclared intrinsic deps. Correlate versions when bumping TCA.
-/// ------------------------------------------------------------
 package.dependencies = [
+  .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
+  .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
+  .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
   .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
   .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
   .package(url: "https://github.com/pointfreeco/swift-tagged", exact: "0.10.0"),
   .package(url: "https://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.0.0"),
-]
-
-/// ✨ Independent 3rd party deps
-/// ------------------------------------------------------------
-package.dependencies += [
-  .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
-  .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
 ]
 
 extension Target.Dependency {
@@ -148,7 +141,7 @@ extension String {
 
 struct Module {
   enum ProductType {
-    case library(Product.Library.LibraryType? = nil)
+    case library
   }
 
   typealias Builder = (inout Self) -> Void
@@ -248,11 +241,10 @@ struct Module {
 extension Package {
   func add(module: Module) {
     // Check should create a product
-    if case let .library(type) = module.createProduct {
+    if case .library = module.createProduct {
       products.append(
         .library(
           name: module.name,
-          type: type,
           targets: module.productTargets
         )
       )
