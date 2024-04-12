@@ -9,8 +9,6 @@ on:
     types:
       - published
   push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:
@@ -36,34 +34,23 @@ jobs:
         run: >
           rm -rf docs-out/.git;
           rm -rf docs-out/main;
-          declare -a targets=("Cache", "Protected", "ShortID")
           git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | tail -n +6 | xargs -I {} rm -rf {};
 
           for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            for target in "${targets[@]}"
-            do
-              if [ -d "docs-out/$target/$tag/data/documentation/networking" ]
-              then
-                echo "✅ Documentation for $target / $tag already exists.";
-              else
-                echo "⏳ Generating documentation for $target @ $tag release.";
-                rm -rf "docs-out/$target/$tag";
+            if [ -d "docs-out/$tag/ShortID/data/documentation/shortid" ]
+            then
+              echo "✅ Documentation for $tag already exists.";
+            else
+              echo "⏳ Generating documentation for @ $tag release.";
+              rm -rf "docs-out/$tag";
 
-                git checkout .;
-                git checkout "$tag";
+              git checkout .;
+              git checkout "$tag";
 
-                swift package \
-                  --allow-writing-to-directory docs-out/"$target"/$tag" \
-                  generate-documentation \
-                  --target $target \
-                  --output-path docs-out/"$target"/"$tag" \
-                  --transform-for-static-hosting \
-                  --hosting-base-path /swift-networking/"$target"/"$tag" \
-                  && echo "✅ Documentation generated for $target @ $tag release." \
-                  || echo "⚠️ Documentation skipped for $target @ $tag.";
-              fi;
-            done
+              make tag="$tag" output=docs-out basepath=swift-utilities docs-all
+
+            fi;
           done
 
       - name: Fix permissions
