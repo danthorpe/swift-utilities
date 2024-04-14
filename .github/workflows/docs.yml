@@ -15,9 +15,12 @@ concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_15.3.app/Contents/Developer
+
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,7 +51,7 @@ jobs:
               git checkout .;
               git checkout "$tag";
 
-              make tag="$tag" output=docs-out basepath=swift-utilities docs-all
+              make docs-all tag="$tag" output=docs-out basepath=swift-utilities
 
             fi;
           done

@@ -45,7 +45,8 @@ AssertionExtras
       Extensions
     ]
     $0.with = [
-      .customDump
+      .customDump,
+      .xcTestDynamicOverlay,
     ]
   }
 Cache
@@ -56,26 +57,37 @@ Cache
     ]
     $0.with = [
       .deque,
+      .dependencies,
       .orderedCollections,
+    ]
+  }
+Extensions
+  <+ 📦 {
+    $0.createProduct = .library
+    $0.with = [
+      .dependencies
+    ]
+  }
+FileManagerClient
+  <+ 📦 {
+    $0.createProduct = .library
+    $0.createUnitTests = false
+    $0.with = [
+      .xcTestDynamicOverlay
     ]
   }
 Protected
   <+ 📦 {
     $0.createProduct = .library
   }
-Extensions
-  <+ 📦 {
-    $0.createProduct = .library
-  }
-FileManagerClient
-  <+ 📦 {
-    $0.createProduct = .library
-    $0.createUnitTests = false
-  }
 Reachability
   <+ 📦 {
     $0.createProduct = .library
     $0.createUnitTests = false
+    $0.with = [
+      .dependencies,
+      .xcTestDynamicOverlay,
+    ]
   }
 ShortID
   <+ 📦 {
@@ -99,7 +111,8 @@ package.dependencies = [
   .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
   .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
   .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
-  .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.0.0"),
+  .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.2.0"),
+  .package(url: "http://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.1.2"),
 ]
 
 extension Target.Dependency {
