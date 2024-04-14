@@ -45,7 +45,8 @@ AssertionExtras
       Extensions
     ]
     $0.with = [
-      .customDump
+      .customDump,
+      .xcTestDynamicOverlay,
     ]
   }
 Cache
@@ -56,26 +57,37 @@ Cache
     ]
     $0.with = [
       .deque,
+      .dependencies,
       .orderedCollections,
+    ]
+  }
+Extensions
+  <+ 📦 {
+    $0.createProduct = .library
+    $0.with = [
+      .dependencies
+    ]
+  }
+FileManagerClient
+  <+ 📦 {
+    $0.createProduct = .library
+    $0.createUnitTests = false
+    $0.with = [
+      .xcTestDynamicOverlay
     ]
   }
 Protected
   <+ 📦 {
     $0.createProduct = .library
   }
-Extensions
-  <+ 📦 {
-    $0.createProduct = .library
-  }
-FileManagerClient
-  <+ 📦 {
-    $0.createProduct = .library
-    $0.createUnitTests = false
-  }
 Reachability
   <+ 📦 {
     $0.createProduct = .library
     $0.createUnitTests = false
+    $0.with = [
+      .dependencies,
+      .xcTestDynamicOverlay,
+    ]
   }
 ShortID
   <+ 📦 {
