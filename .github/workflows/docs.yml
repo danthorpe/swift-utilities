@@ -9,6 +9,8 @@ on:
     types:
       - published
   push:
+    branches:
+    - main
   workflow_dispatch:
 
 concurrency:
