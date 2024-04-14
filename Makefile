@@ -13,9 +13,9 @@ test-all:
 	swift test
 
 docs-all:
-	$(MAKE) output=$(output) tag=$(tag) basepath=$(basepath) target=Cache docs
-	$(MAKE) output=$(output) tag=$(tag) basepath=$(basepath) target=Protected docs
-	$(MAKE) output=$(output) tag=$(tag) basepath=$(basepath) target=ShortID docs
+	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=Cache
+	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=Protected
+	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=ShortID
 
 docs:
 	mkdir -p $(output)/$(tag)/$(target)

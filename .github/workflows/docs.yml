@@ -51,7 +51,7 @@ jobs:
               git checkout .;
               git checkout "$tag";
 
-              make tag="$tag" output=docs-out basepath=swift-utilities docs-all
+              make docs-all tag="$tag" output=docs-out basepath=swift-utilities
 
             fi;
           done
