@@ -41,18 +41,17 @@ jobs:
 
           for tag in $(echo "main"; git tag -l --sort=-v:refname | grep -e "\d\+\.\d\+.0" | head -6);
           do
-            if [ -f ".github/workflows/docs.yml" ]
+            if [ -d "docs-out/$tag/ShortID/data/documentation/shortid" ]
             then
-              if [ -d "docs-out/$tag/ShortID/data/documentation/shortid" ]
+              echo "✅ Documentation for $tag already exists.";
+            else
+              echo "⏳ Generating documentation for @ $tag release.";
+              rm -rf "docs-out/$tag";
+
+              git checkout .;
+              git checkout "$tag";
+              if [ -f ".github/workflows/docs.yml" ]
               then
-                echo "✅ Documentation for $tag already exists.";
-              else
-                echo "⏳ Generating documentation for @ $tag release.";
-                rm -rf "docs-out/$tag";
-
-                git checkout .;
-                git checkout "$tag";
-
                 make docs-all tag="$tag" output=docs-out basepath=swift-utilities
               fi;
             fi;
