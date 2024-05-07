@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
   swift-package-test:
     name: Test Swift Package
     uses: danthorpe/ci/.github/workflows/swift-package.yml@main
@@ -33,3 +34,9 @@ jobs:
             }
           ]
         }
+
+  ci:
+    name: CI
+    if: github.event_name == 'push'
+    needs: [swift-package-test]
+    uses: danthorpe/ci/.github/workflows/ci.yml@main
