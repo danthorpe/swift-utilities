@@ -37,6 +37,7 @@ extension Lockable where Self: Lock {
     return try block()
   }
 }
+
 #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
 final class UnfairLock: Lock, Lockable {
   private var unfairLock: os_unfair_lock_t
