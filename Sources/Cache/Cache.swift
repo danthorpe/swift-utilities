@@ -4,7 +4,10 @@ import DequeModule
 import Extensions
 import Foundation
 import OrderedCollections
+
+#if canImport(os.log)
 import os.log
+#endif
 
 #if canImport(UIKit)
 import UIKit
@@ -39,7 +42,9 @@ public actor Cache<Key: Hashable, Value> {
 
   public var limit: UInt
 
+  #if canImport(os.log)
   var logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "works.dan.swift-utilities", category: "Cache")
+  #endif
   var absoluteUpperLimit: UInt {
     limit + max(10, UInt(Double(limit) * 0.1))
   }
@@ -109,7 +114,9 @@ public actor Cache<Key: Hashable, Value> {
         }
       }
     } catch {
+      #if canImport(os.log)
       logger.error("🗂 ⚠️ Caught error receiving system events: \(error)")
+      #endif
     }
   }
 
@@ -216,7 +223,9 @@ extension Cache {
 
   fileprivate func evictCachedValues(forKeys keys: some Collection<Key>, reason event: EvictionEvent) {
     let slice = data.slice(keys)
+    #if canImport(os.log)
     logger.info("🗂 Will evict \(keys.map(String.init(describing:))) due to: \(event.description)")
+    #endif
     _events.continuation.yield(.willEvictCachedValues(slice, reason: event))
     slice.keys.forEach(removeCachedValue(forKey:))
   }
