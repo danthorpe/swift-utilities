@@ -5,6 +5,7 @@ PLATFORM_MAC_CATALYST = macOS,variant=Mac Catalyst
 PLATFORM_TVOS = tvOS Simulator,id=$(call udid_for,tvOS 17.2,TV)
 PLATFORM_VISIONOS = visionOS Simulator,id=$(call udid_for,visionOS 1.0,Vision)
 PLATFORM_WATCHOS = watchOS Simulator,id=$(call udid_for,watchOS 10.2,Watch)
+PWD=$(shell pwd)
 
 default:
 	test-all
@@ -16,6 +17,10 @@ docs-all:
 	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=Cache
 	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=Protected
 	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=ShortID
+
+test-linux:
+	docker build -f Dockerfile -t linuxtest .
+	docker run linuxtest
 
 docs:
 	mkdir -p $(output)/$(tag)/$(target)
