@@ -1,4 +1,4 @@
-import Combine
+import AsyncAlgorithms
 import Dependencies
 import DequeModule
 import Extensions
@@ -45,12 +45,8 @@ public actor Cache<Key: Hashable, Value> {
   }
   var data: Storage
   var access: Access
-  var eventDelegate = PassthroughSubject<Event, Never>()
-  var evictionsDelegate = PassthroughSubject<EvictionEvent, Never>()
-
-  var evictions: some AsyncSequence {
-    evictionsDelegate.values
-  }
+  var _evictions = AsyncStream<EvictionEvent>.makeStream()
+  var _events = AsyncStream<Event>.makeStream()
 
   @Dependency(\.date) private var date
 
@@ -70,7 +66,11 @@ public actor Cache<Key: Hashable, Value> {
   }
 
   public init(limit: UInt, data: Storage) {
-    self.init(limit: limit, data: data, didReciveSystemEvents: SystemEvent.publisher().values)
+    self.init(
+      limit: limit,
+      data: data,
+      didReciveSystemEvents: SystemEvent.stream()
+    )
   }
 
   public init(limit: UInt, items: [Key: Value], duration: TimeInterval) {
@@ -79,14 +79,18 @@ public actor Cache<Key: Hashable, Value> {
       data: items.reduce(into: Storage()) { storage, element in
         storage[element.key] = CachedValue.with(value: element.value, duration: duration)
       },
-      didReciveSystemEvents: SystemEvent.publisher().values
+      didReciveSystemEvents: SystemEvent.stream()
     )
   }
 
   @available(macOS 12.0, *)
   @available(iOS 15.0, *)
   public init(limit: UInt) {
-    self.init(limit: limit, data: .init(), didReciveSystemEvents: SystemEvent.publisher().values)
+    self.init(
+      limit: limit,
+      data: .init(),
+      didReciveSystemEvents: SystemEvent.stream()
+    )
   }
 
   func startReceivingSystemEvents<SystemEvents: AsyncSequence>(
@@ -97,9 +101,9 @@ public actor Cache<Key: Hashable, Value> {
       for try await event in stream {
         switch event {
         case .applicationWillSuspend:
-          eventDelegate.send(.shouldPersistCachedValues(data))
+          _events.continuation.yield(.shouldPersistCachedValues(data))
         case .applicationDidReceiveMemoryPressure(.warning):
-          evictionsDelegate.send(.memoryPressure)
+          _evictions.continuation.yield(.memoryPressure)
         case .applicationDidReceiveMemoryPressure(.normal):
           break
         }
@@ -110,16 +114,10 @@ public actor Cache<Key: Hashable, Value> {
   }
 
   func handleEvictionEvents() async {
-    do {
-      for try await eviction in evictions {
-        if let eviction = eviction as? EvictionEvent {
-          let countToRemove = calculateEvictionCount(from: eviction)
-          let rangeToRemove = countToRemove ..< access.endIndex
-          evictCachedValues(forKeys: access[rangeToRemove], reason: eviction)
-        }
-      }
-    } catch {
-      logger.error("🗂 ⚠️ Caught error handling eviction event: \(error)")
+    for await eviction in _evictions.stream {
+      let countToRemove = calculateEvictionCount(from: eviction)
+      let rangeToRemove = countToRemove ..< access.endIndex
+      evictCachedValues(forKeys: access[rangeToRemove], reason: eviction)
     }
   }
 
@@ -163,7 +161,7 @@ extension Cache.CachedValue: Codable where Value: Codable {}
 extension Cache {
 
   public var events: some AsyncSequence {
-    eventDelegate.values
+    _events.stream
   }
 
   public var count: Int {
@@ -219,7 +217,7 @@ extension Cache {
   fileprivate func evictCachedValues(forKeys keys: some Collection<Key>, reason event: EvictionEvent) {
     let slice = data.slice(keys)
     logger.info("🗂 Will evict \(keys.map(String.init(describing:))) due to: \(event.description)")
-    eventDelegate.send(.willEvictCachedValues(slice, reason: event))
+    _events.continuation.yield(.willEvictCachedValues(slice, reason: event))
     slice.keys.forEach(removeCachedValue(forKey:))
   }
 
@@ -227,7 +225,7 @@ extension Cache {
     removeAccess(for: key)
     access.insert(key, at: 0)
     if access.count >= absoluteUpperLimit {
-      evictionsDelegate.send(.countLimit)
+      _evictions.continuation.yield(.countLimit)
     }
   }
 
@@ -243,40 +241,46 @@ extension Cache {
 @available(iOS 15.0, *)
 extension Cache.SystemEvent {
 
-  static func publisher(notificationCenter center: NotificationCenter = .default) -> AnyPublisher<Self, Never> {
-    let subject = PassthroughSubject<Cache.SystemEvent, Never>()
-    let queue = DispatchQueue(label: "dan.works.swift-utilities.cache.memory-pressure")
-    let source = DispatchSource.makeMemoryPressureSource(eventMask: .all, queue: queue)
-    source.setEventHandler {
-      var event = source.data
-      event.formIntersection([.critical, .warning, .normal])
-      if event.contains([.warning, .critical]) {
-        subject.send(.applicationDidReceiveMemoryPressure(.warning))
-      } else {
-        subject.send(.applicationDidReceiveMemoryPressure(.normal))
+  static func stream(notificationCenter center: NotificationCenter = .default) -> AsyncStream<Self> {
+    let memoryPressure = AsyncStream { continuation in
+      let queue = DispatchQueue(label: "dan.works.swift-utilities.cache.memory-pressure")
+      let source = DispatchSource.makeMemoryPressureSource(eventMask: .all, queue: queue)
+      source.setEventHandler {
+        var event = source.data
+        event.formIntersection([.critical, .warning, .normal])
+        if event.contains([.warning, .critical]) {
+          continuation.yield(Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning))
+        } else {
+          continuation.yield(.applicationDidReceiveMemoryPressure(.normal))
+        }
       }
     }
 
-    return
-      Publishers
-      .Merge(
-        center.publisher(for: .willResignActiveNotification),
-        center.publisher(for: .willTerminateNotification)
-      )
+    let willResign =
+      center
+      .notifications(named: .willResignActiveNotification)
       .map { _ in Cache.SystemEvent.applicationWillSuspend }
-      #if os(iOS)
-    .merge(
-      with:
-        center.publisher(
-          for: UIApplication.didReceiveMemoryWarningNotification
-        )
-        .map { _ in
-          Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning)
-        }
-    )
-      #endif
-      .merge(with: subject.handleEvents(receiveSubscription: { _ in }))
-      .eraseToAnyPublisher()
+      .eraseToStream()
+
+    let willTerminate =
+      center
+      .notifications(named: .willTerminateNotification)
+      .map { _ in Cache.SystemEvent.applicationWillSuspend }
+      .eraseToStream()
+
+    let willSuspend = merge(willResign, willTerminate)
+
+    #if os(iOS)
+    let additionalMemoryWarning =
+      center
+      .notifications(named: UIApplication.didReceiveMemoryWarningNotification)
+      .map { _ in Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning) }
+      .eraseToStream()
+
+    return merge(memoryPressure, willSuspend, additionalMemoryWarning).eraseToStream()
+    #else
+    return merge(memoryPressure, willSuspend).eraseToStream()
+    #endif
   }
 }
 
