@@ -14,6 +14,10 @@ repos:
     rev: v0.1.0
     hooks:
       - id: dockerfilelint
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.0
+    hooks:
+    - id: actionlint
   - repo: https://github.com/realm/SwiftLint
     rev: 0.54.0
     hooks:
