@@ -1,14 +1,11 @@
-import Combine
-import Foundation
-
 // MARK: - Client Interface
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
 public struct Reachability {
-  public var monitor: AnyPublisher<Path, Never>
+  public var monitor: () -> AsyncStream<Path>
 
-  public init(monitor: AnyPublisher<Path, Never>) {
+  public init(monitor: @escaping () -> AsyncStream<Path>) {
     self.monitor = monitor
   }
 }

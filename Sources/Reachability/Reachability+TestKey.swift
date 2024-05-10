@@ -1,43 +1,39 @@
-import Combine
+import AsyncAlgorithms
 import Dependencies
 import Foundation
 import XCTestDynamicOverlay
 
 @available(iOS 13.0, *)
-@available(macOS 10.15, *)
+@available(macOS 13, *)
 extension Reachability {
 
-  public static let satisfied = always(.satisfied)
+  static public let previewValue: Reachability = .unsatisfied
 
-  public static let unsatisfied = always(.unsatisfied)
+  public static let satisfied = continuous(.satisfied)
 
-  internal static func always(_ status: Path.Status) -> Self {
-    let path = Path(status: status)
-    let publisher = Just(path)
-      .eraseToAnyPublisher()
-    return Self(monitor: publisher)
+  public static let unsatisfied = continuous(.unsatisfied)
+
+  public static let intermittent = every(.seconds(2)) {
+    Bool.random() ? .satisfied : .unsatisfied
+  }
+
+  internal static func continuous(_ status: Path.Status) -> Self {
+    every(.seconds(5)) { status }
+  }
+
+  internal static func every(_ duration: Duration, status: @escaping @Sendable () -> Path.Status) -> Self {
+    Reachability {
+      AsyncStream { continuation in
+        @Dependency(\.continuousClock) var clock
+        Task {
+          try await clock.sleep(for: duration)
+          continuation.yield(Path(status: status()))
+        }
+      }
+    }
   }
 }
 
-@available(iOS 13.0, *)
-@available(macOS 10.15, *)
-extension Reachability {
-
-  public static let intermittent = Self(
-    monitor: Timer.publish(every: 2, on: .main, in: .default)
-      .autoconnect()
-      .scan(
-        Path.Status.satisfied,
-        { status, _ in
-          status == .satisfied ? .unsatisfied : .satisfied
-        }
-      )
-      .map { Path(status: $0) }
-      .eraseToAnyPublisher()
-  )
-}
-
 extension Reachability: TestDependencyKey {
-  static public let testValue: Reachability = .satisfied
-  static public let previewValue: Reachability = .unsatisfied
+  static public let testValue = Reachability(monitor: unimplemented("\(Self.self).monitor"))
 }
