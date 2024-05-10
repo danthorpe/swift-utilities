@@ -56,6 +56,7 @@ Cache
       Extensions
     ]
     $0.with = [
+      .asyncAlgorithms,
       .deque,
       .dependencies,
       .orderedCollections,
@@ -85,6 +86,7 @@ Reachability
     $0.createProduct = .library
     $0.createUnitTests = false
     $0.with = [
+      .asyncAlgorithms,
       .dependencies,
       .xcTestDynamicOverlay,
     ]
@@ -107,6 +109,7 @@ ShortID
 // MARK: - 👜 3rd Party Dependencies
 
 package.dependencies = [
+  .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
   .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
   .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
   .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
@@ -116,6 +119,9 @@ package.dependencies = [
 ]
 
 extension Target.Dependency {
+  static let asyncAlgorithms: Self = .product(
+    name: "AsyncAlgorithms", package: "swift-async-algorithms"
+  )
   static let customDump: Self = .product(
     name: "CustomDump", package: "swift-custom-dump"
   )
