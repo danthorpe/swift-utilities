@@ -61,7 +61,7 @@ jobs:
   ci:
     name: CI
     if: github.event_name == 'push'
-    needs: [analysis, swift-package-test]
+#    needs: [analysis, swift-package-test]
     uses: danthorpe/ci/.github/workflows/ci.yml@main
     with:
       doc-targets: |-
