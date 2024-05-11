@@ -49,6 +49,7 @@ AssertionExtras
       .xcTestDynamicOverlay,
     ]
   }
+#if !os(Linux)
 Cache
   <+ 📦 {
     $0.createProduct = .library
@@ -62,6 +63,7 @@ Cache
       .orderedCollections,
     ]
   }
+#endif
 Extensions
   <+ 📦 {
     $0.createProduct = .library

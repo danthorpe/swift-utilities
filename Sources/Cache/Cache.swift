@@ -252,7 +252,6 @@ extension Cache.SystemEvent {
 
   static func stream(notificationCenter center: NotificationCenter = .default) -> AsyncStream<Self> {
     let memoryPressure = AsyncStream { continuation in
-      #if !os(Linux)
       let queue = DispatchQueue(label: "dan.works.swift-utilities.cache.memory-pressure")
       let source = DispatchSource.makeMemoryPressureSource(eventMask: .all, queue: queue)
       source.setEventHandler {
@@ -264,7 +263,6 @@ extension Cache.SystemEvent {
           continuation.yield(.applicationDidReceiveMemoryPressure(.normal))
         }
       }
-      #endif
     }
 
     let willResign =
