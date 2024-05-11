@@ -1,4 +1,5 @@
-import Combine
+#if canImport(Network)
+import AsyncAlgorithms
 import Dependencies
 import Foundation
 import Network
@@ -6,25 +7,18 @@ import Network
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
 extension Reachability {
-
-  public static let live = live(queue: .main)
-
-  public static func live(queue: DispatchQueue) -> Self {
-    let monitor = NWPathMonitor()
-    let subject = PassthroughSubject<NWPath, Never>()
-    monitor.pathUpdateHandler = subject.send
-
-    return Self(
-      monitor:
-        subject
-        .handleEvents(
-          receiveSubscription: { _ in monitor.start(queue: queue) },
-          receiveCancel: monitor.cancel
-        )
-        .map(Reachability.Path.init(rawValue:))
-        .removeDuplicates()
-        .eraseToAnyPublisher()
-    )
+  public static let live = Reachability {
+    AsyncStream { continuation in
+      Task { @MainActor in
+        let monitor = NWPathMonitor()
+        monitor.start(queue: .main)
+        monitor.pathUpdateHandler = { path in
+          continuation.yield(Path(status: .init(rawValue: path.status)))
+        }
+      }
+    }
+    .removeDuplicates()
+    .eraseToStream()
   }
 }
 
@@ -56,3 +50,4 @@ extension Reachability.Path {
 extension Reachability: DependencyKey {
   static public let liveValue: Reachability = .live
 }
+#endif

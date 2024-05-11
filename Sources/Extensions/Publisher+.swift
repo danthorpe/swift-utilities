@@ -1,3 +1,4 @@
+#if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
 import Combine
 import Foundation
 
@@ -32,3 +33,4 @@ extension Publisher {
     }
   }
 }
+#endif

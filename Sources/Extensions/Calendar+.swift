@@ -1,5 +1,11 @@
 import Foundation
 
+#if os(Linux)
+import let CDispatch.NSEC_PER_MSEC
+#else
+import Dispatch
+#endif
+
 extension Calendar {
 
   /// Approximately the end of the day.

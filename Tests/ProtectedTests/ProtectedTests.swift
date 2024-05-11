@@ -9,10 +9,6 @@ final class ProtectedTests: XCTestCase {
     var value: Int = 0
   }
 
-  var metrics: [XCTMetric] {
-    [XCTClockMetric()]
-  }
-
   func checkThreadSafety(iterations: Int = 100, _ block: @escaping (Int) -> Void) {
     let queue = DispatchQueue(
       label: "works.dan.Utilities.ProtectedTests",
@@ -44,20 +40,12 @@ final class ProtectedTests: XCTestCase {
     XCTAssertEqual($subject.read { $0.value }, 2)
   }
 
-  func testReadWriteSingleValueBenchmark() {
-    measure(metrics: metrics, options: .default, block: testReadWriteSingleValue)
-  }
-
   func testReadWriteThreadSafety() {
     @Protected var subject = Subject()
     checkThreadSafety { _ in
       $subject.write { $0.value += 1 }
     }
     XCTAssertEqual(subject.value, 100)
-  }
-
-  func testReadWriteThreadSafetyBenchmark() {
-    measure(metrics: metrics, options: .default, block: testReadWriteThreadSafety)
   }
 
   func testRangeReplaceableValue() {
@@ -68,7 +56,21 @@ final class ProtectedTests: XCTestCase {
     XCTAssertEqual(subject.count, 1010)
   }
 
+  #if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
+  var metrics: [XCTMetric] {
+    [XCTClockMetric()]
+  }
+
+  func testReadWriteSingleValueBenchmark() {
+    measure(metrics: metrics, options: .default, block: testReadWriteSingleValue)
+  }
+
+  func testReadWriteThreadSafetyBenchmark() {
+    measure(metrics: metrics, options: .default, block: testReadWriteThreadSafety)
+  }
+
   func testRangeReplaceableValueBenchmark() {
     measure(metrics: metrics, options: .default, block: testRangeReplaceableValue)
   }
+  #endif
 }

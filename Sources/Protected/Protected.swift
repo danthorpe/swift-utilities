@@ -37,7 +37,7 @@ extension Lockable where Self: Lock {
     return try block()
   }
 }
-
+#if os(iOS) || os(watchOS) || os(tvOS) || os(macOS)
 final class UnfairLock: Lock, Lockable {
   private var unfairLock: os_unfair_lock_t
 
@@ -59,6 +59,37 @@ final class UnfairLock: Lock, Lockable {
     os_unfair_lock_unlock(unfairLock)
   }
 }
+#else
+final class UnfairLock: Lock, Lockable {
+  fileprivate let mutex: UnsafeMutablePointer<pthread_mutex_t> = UnsafeMutablePointer.allocate(capacity: 1)
+  init() {
+    var attr: pthread_mutexattr_t = pthread_mutexattr_t()
+    pthread_mutexattr_init(&attr)
+    #if DEBUG
+    pthread_mutexattr_settype(&attr, Int32(PTHREAD_MUTEX_RECURSIVE))
+    #endif
+
+    let err = pthread_mutex_init(self.mutex, &attr)
+    precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+  }
+
+  deinit {
+    let err = pthread_mutex_destroy(self.mutex)
+    precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+    mutex.deallocate()
+  }
+
+  fileprivate func lock() {
+    let err = pthread_mutex_lock(self.mutex)
+    precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+  }
+
+  fileprivate func unlock() {
+    let err = pthread_mutex_unlock(self.mutex)
+    precondition(err == 0, "\(#function) failed in pthread_mutex with error \(err)")
+  }
+}
+#endif
 
 /// A property wrapper which provides thread-safety to
 /// any "protected" value. Access is only thread
