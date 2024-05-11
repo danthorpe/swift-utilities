@@ -63,3 +63,8 @@ jobs:
     if: github.event_name == 'push'
     needs: [analysis, swift-package-test]
     uses: danthorpe/ci/.github/workflows/ci.yml@main
+    with:
+      doc-targets: |-
+        Cache
+        Protected
+        ShortID
