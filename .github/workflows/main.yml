@@ -58,8 +58,12 @@ jobs:
           ]
         }
 
-  ci:
-    name: CI
+  docs:
+    name: Docs
     if: github.event_name == 'push'
     needs: [analysis, swift-package-test]
-    uses: danthorpe/ci/.github/workflows/ci.yml@main
+    uses: danthorpe/ci/.github/workflows/docs.yml@main
+    with:
+      os: 'macos-14'
+      targets: '["Cache","Protected","ShortID"]'
+      basepath: 'swift-utilities'
