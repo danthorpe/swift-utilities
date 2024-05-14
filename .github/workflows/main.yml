@@ -13,55 +13,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-#   analysis:
-#     name: CodeQL
-#     if: github.event_name != 'workflow_dispatch'
-#     uses: danthorpe/ci/.github/workflows/static-analysis.yml@main
-#     permissions:
-#       actions: read
-#       contents: read
-#       security-events: write
-#     with:
-#       matrix: >
-#         {
-#           "include": [
-#             {
-#               "os": "ubuntu-latest",
-#               "swift": "latest",
-#               "xcode": "latest"
-#             }
-#           ]
-#         }
-#
-#   swift-package-test:
-#     name: Test Swift Package
-#     uses: danthorpe/ci/.github/workflows/swift-package.yml@main
-#     secrets: inherit
-#     with:
-#       matrix: >
-#         {
-#           "include": [
-#             {
-#               "os": "macos-14",
-#               "swift": "5.9",
-#               "xcode": "15.1"
-#             },
-#             {
-#               "os": "macos-14",
-#               "swift": "5.10",
-#               "xcode": "15.3"
-#             },
-#             {
-#               "os": "ubuntu-latest",
-#               "swift": "5.10"
-#             }
-#           ]
-#         }
+  analysis:
+    name: CodeQL
+    if: github.event_name != 'workflow_dispatch'
+    uses: danthorpe/ci/.github/workflows/static-analysis.yml@main
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    with:
+      matrix: >
+        {
+          "include": [
+            {
+              "os": "ubuntu-latest",
+              "swift": "latest",
+              "xcode": "latest"
+            }
+          ]
+        }
+
+  swift-package-test:
+    name: Test Swift Package
+    uses: danthorpe/ci/.github/workflows/swift-package.yml@main
+    secrets: inherit
+    with:
+      matrix: >
+        {
+          "include": [
+            {
+              "os": "macos-14",
+              "swift": "5.9",
+              "xcode": "15.1"
+            },
+            {
+              "os": "macos-14",
+              "swift": "5.10",
+              "xcode": "15.3"
+            },
+            {
+              "os": "ubuntu-latest",
+              "swift": "5.10"
+            }
+          ]
+        }
 
   docs:
     name: Docs
-    # if: github.event_name == 'push'
-    # needs: [analysis, swift-package-test]
+    if: github.event_name == 'push'
+    needs: [analysis, swift-package-test]
     uses: danthorpe/ci/.github/workflows/docs.yml@main
     with:
       os: 'macos-14'
