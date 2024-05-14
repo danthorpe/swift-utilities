@@ -13,22 +13,6 @@ default:
 test-all:
 	swift test
 
-docs-all:
-	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=Cache
-	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=Protected
-	$(MAKE) docs output=$(output) tag=$(tag) basepath=$(basepath) target=ShortID
-
 test-linux:
 	docker build -f Dockerfile -t linuxtest .
 	docker run linuxtest
-
-docs:
-	mkdir -p $(output)/$(tag)/$(target)
-	swift package \
-	--allow-writing-to-directory $(output)/$(tag)/$(target) \
-	generate-documentation --target $(target) \
-	--output-path $(output)/$(tag)/$(target) \
-	--transform-for-static-hosting \
-	--hosting-base-path /$(basepath)/$(tag)/$(target) \
-	&& echo "✅ Documentation generated for $(target) @ $(tag) release." \
-	|| echo "⚠️ Documentation skipped for $(target) @ $(tag)."

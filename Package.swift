@@ -13,8 +13,6 @@ package.platforms = [
   .watchOS(.v7),
 ]
 
-// Hello
-
 // MARK: - 🧸 Module Names
 
 let AssertionExtras = "AssertionExtras"
