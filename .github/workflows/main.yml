@@ -64,5 +64,6 @@ jobs:
     # needs: [analysis, swift-package-test]
     uses: danthorpe/ci/.github/workflows/docs.yml@main
     with:
+      os: 'macos-14'
       targets: '["Cache","Protected","ShortID"]'
       basepath: 'swift-utilities'
