@@ -15,8 +15,8 @@ public struct Reachability {
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
 extension Reachability {
-  public struct Path: Hashable {
-    public enum Status: Hashable {
+  public struct Path: Hashable, Sendable {
+    public enum Status: Hashable, Sendable {
       case satisfied
       case unsatisfied
       case requiresConnection

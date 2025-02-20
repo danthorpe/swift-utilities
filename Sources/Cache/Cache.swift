@@ -30,8 +30,8 @@ public actor Cache<Key: Hashable, Value> {
     case shouldPersistCachedValues(Storage)
   }
 
-  enum SystemEvent {
-    enum MemoryPressure {
+  enum SystemEvent: Sendable {
+    enum MemoryPressure: Sendable {
       case warning, normal
     }
     case applicationWillSuspend
@@ -247,10 +247,27 @@ extension Cache {
 
 // MARK: - Other Implementation Details
 
+protocol AsyncSequenceOf<Element>: AsyncSequence where Element: Sendable {}
+
+struct _AsyncSequenceOfWrapper<Base: AsyncSequence>: AsyncSequenceOf {
+  typealias Element = Base.Element
+  typealias AsyncIterator = Base.AsyncIterator
+  var base: Base
+  func makeAsyncIterator() -> AsyncIterator {
+    base.makeAsyncIterator()
+  }
+}
+
+extension AsyncSequence {
+  func erase() -> some AsyncSequenceOf<Element> {
+    _AsyncSequenceOfWrapper(base: self)
+  }
+}
+
 @available(iOS 15.0, *)
 extension Cache.SystemEvent {
 
-  static func stream(notificationCenter center: NotificationCenter = .default) -> AsyncStream<Self> {
+  static func stream(notificationCenter center: NotificationCenter = .default) -> some AsyncSequenceOf<Self> {
     let memoryPressure = AsyncStream { continuation in
       let queue = DispatchQueue(label: "dan.works.swift-utilities.cache.memory-pressure")
       let source = DispatchSource.makeMemoryPressureSource(eventMask: .all, queue: queue)
@@ -269,13 +286,13 @@ extension Cache.SystemEvent {
       center
       .notifications(named: .willResignActiveNotification)
       .map { _ in Cache.SystemEvent.applicationWillSuspend }
-      .eraseToStream()
+      .erase()
 
     let willTerminate =
       center
       .notifications(named: .willTerminateNotification)
       .map { _ in Cache.SystemEvent.applicationWillSuspend }
-      .eraseToStream()
+      .erase()
 
     let willSuspend = merge(willResign, willTerminate)
 
@@ -284,12 +301,12 @@ extension Cache.SystemEvent {
       center
       .notifications(named: UIApplication.didReceiveMemoryWarningNotification)
       .map { _ in Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning) }
-      .eraseToStream()
-
-    return merge(memoryPressure, willSuspend, additionalMemoryWarning).eraseToStream()
+      .erase()
+    return merge(memoryPressure, willSuspend, additionalMemoryWarning).erase()
     #else
-    return merge(memoryPressure, willSuspend).eraseToStream()
+    return merge(memoryPressure, willSuspend).erase()
     #endif
+
   }
 }
 

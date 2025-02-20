@@ -46,7 +46,8 @@ AssertionExtras
     ]
     $0.with = [
       .customDump,
-      .xcTestDynamicOverlay,
+      .issueReporting,
+      .issueReportingTestSupport,
     ]
   }
 #if !os(Linux)
@@ -76,7 +77,9 @@ FileManagerClient
     $0.createProduct = .library
     $0.createUnitTests = false
     $0.with = [
-      .xcTestDynamicOverlay
+      .dependencies,
+      .dependenciesMacros,
+      .issueReporting,
     ]
   }
 Protected
@@ -90,7 +93,7 @@ Reachability
     $0.with = [
       .asyncAlgorithms,
       .dependencies,
-      .xcTestDynamicOverlay,
+      .issueReporting,
     ]
   }
 ShortID
@@ -113,11 +116,11 @@ ShortID
 package.dependencies = [
   .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.0"),
   .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
-  .package(url: "https://github.com/apple/swift-collections", from: "1.0.2"),
+  .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
   .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
   .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
-  .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.2.0"),
-  .package(url: "http://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.1.2"),
+  .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.7.0"),
+  .package(url: "http://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.5.0"),
 ]
 
 extension Target.Dependency {
@@ -130,6 +133,9 @@ extension Target.Dependency {
   static let dependencies: Self = .product(
     name: "Dependencies", package: "swift-dependencies"
   )
+  static let dependenciesMacros: Self = .product(
+    name: "DependenciesMacros", package: "swift-dependencies"
+  )
   static let deque: Target.Dependency = .product(
     name: "DequeModule", package: "swift-collections"
   )
@@ -139,8 +145,11 @@ extension Target.Dependency {
   static let tagged: Self = .product(
     name: "Tagged", package: "swift-tagged"
   )
-  static let xcTestDynamicOverlay: Self = .product(
-    name: "XCTestDynamicOverlay", package: "xctest-dynamic-overlay"
+  static let issueReporting: Self = .product(
+    name: "IssueReporting", package: "xctest-dynamic-overlay"
+  )
+  static let issueReportingTestSupport: Self = .product(
+    name: "IssueReportingTestSupport", package: "xctest-dynamic-overlay"
   )
 }
 

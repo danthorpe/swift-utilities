@@ -1,6 +1,9 @@
+import Dependencies
+import DependenciesMacros
 import Foundation
-import XCTestDynamicOverlay
+import IssueReporting
 
+@DependencyClient
 public struct FileManagerClient {
   public typealias LocateURLForDirectoryMask = (
     FileManager.SearchPathDirectory,
@@ -24,59 +27,14 @@ public struct FileManagerClient {
   public var removeItemAtURL: RemoveItemAtURL
   public var fileExistsAtPath: FileExistsAtPath
 
-  public init(
-    url: @escaping LocateURLForDirectoryMask,
-    urls: @escaping LocateURLsForDirectoryMask,
-    createDirectoryAtURL: @escaping CreateDirectoryAtURL,
-    removeItemAtURL: @escaping RemoveItemAtURL,
-    fileExistsAtPath: @escaping FileExistsAtPath
-  ) {
-    self.url = url
-    self.urls = urls
-    self.createDirectoryAtURL = createDirectoryAtURL
-    self.removeItemAtURL = removeItemAtURL
-    self.fileExistsAtPath = fileExistsAtPath
-  }
-
-  public func url(
-    for directory: FileManager.SearchPathDirectory,
-    in mask: FileManager.SearchPathDomainMask,
-    appropriateFor: URL?,
-    create: Bool
-  ) throws -> URL {
-    try url(directory, mask, appropriateFor, create)
-  }
-
-  public func urls(
-    for directory: FileManager.SearchPathDirectory,
-    in mask: FileManager.SearchPathDomainMask
-  ) -> [URL] {
-    urls(directory, mask)
-  }
-
-  public func createDirectory(
-    at url: URL,
-    withIntermediateDirectories: Bool,
-    attributes: [FileAttributeKey: Any]?
-  ) throws {
-    try createDirectoryAtURL(url, withIntermediateDirectories, attributes)
-  }
-
-  public func removeItem(at url: URL) throws {
-    try removeItemAtURL(url)
-  }
-
-  public func fileExists(atPath path: String) -> Bool {
-    fileExistsAtPath(path)
-  }
 }
 
 // MARK: - Live
 
-extension FileManagerClient {
-  public static let live: Self = {
+extension FileManagerClient: DependencyKey {
+  public static let liveValue: FileManagerClient = {
     let fileManager = FileManager.default
-    return Self(
+    return FileManagerClient(
       url: { try fileManager.url(for: $0, in: $1, appropriateFor: $2, create: $3) },
       urls: { fileManager.urls(for: $0, in: $1) },
       createDirectoryAtURL: {
@@ -90,16 +48,12 @@ extension FileManagerClient {
       fileExistsAtPath: { fileManager.fileExists(atPath: $0) }
     )
   }()
-}
 
-// MARK: - Unimplemented
-
-extension FileManagerClient {
-  public static let unimplemented = Self(
-    url: XCTUnimplemented("\(Self.self).url"),
-    urls: XCTUnimplemented("\(Self.self).urls"),
-    createDirectoryAtURL: XCTUnimplemented("\(Self.self).createDirectoryAtURL"),
-    removeItemAtURL: XCTUnimplemented("\(Self.self).removeItemAtURL"),
-    fileExistsAtPath: XCTUnimplemented("\(Self.self).fileExistsAtPath")
+  public static let testValue: FileManagerClient = FileManagerClient(
+    url: unimplemented("\(Self.self).url"),
+    urls: unimplemented("\(Self.self).urls", placeholder: []),
+    createDirectoryAtURL: unimplemented("\(Self.self).createDirectoryAtURL"),
+    removeItemAtURL: unimplemented("\(Self.self).removeItemAtURL"),
+    fileExistsAtPath: unimplemented("\(Self.self).fileExistsAtPath", placeholder: false)
   )
 }
