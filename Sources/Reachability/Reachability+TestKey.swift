@@ -1,7 +1,7 @@
 import AsyncAlgorithms
 import Dependencies
 import Foundation
-import XCTestDynamicOverlay
+import IssueReporting
 
 @available(iOS 13.0, *)
 @available(macOS 13, *)
@@ -35,5 +35,5 @@ extension Reachability {
 }
 
 extension Reachability: TestDependencyKey {
-  static public let testValue = Reachability(monitor: unimplemented("\(Self.self).monitor"))
+  static public let testValue = Reachability(monitor: unimplemented("\(Self.self).monitor", placeholder: .never))
 }

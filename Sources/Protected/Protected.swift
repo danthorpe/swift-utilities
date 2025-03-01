@@ -103,7 +103,7 @@ final class UnfairLock: Lock, Lockable {
 /// methods.
 @propertyWrapper
 @dynamicMemberLookup
-public final class Protected<Value> {
+public final class Protected<Value>: @unchecked Sendable {
   private let lock: Lockable = UnfairLock()
   private var value: Value
 

@@ -1,6 +1,6 @@
 import CustomDump
+import IssueReporting
 import XCTest
-import XCTestDynamicOverlay
 
 public func XCTAssertNoThrows<T: Sendable>(
   _ expression: @autoclosure () async throws -> T,

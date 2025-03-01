@@ -1,5 +1,5 @@
-// swift-tools-version: 6.0
-@preconcurrency import PackageDescription
+// swift-tools-version: 5.8
+import PackageDescription
 
 var package = Package(name: "swift-utilities")
 
@@ -59,10 +59,8 @@ Cache
     ]
     $0.with = [
       .asyncAlgorithms,
-      .concurrencyExtras,
       .deque,
       .dependencies,
-      .dependenciesMacros,
       .orderedCollections,
     ]
   }
@@ -120,7 +118,6 @@ package.dependencies = [
   .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.2"),
   .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
   .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.3.0"),
-  .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.0"),
   .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
   .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.7.0"),
   .package(url: "http://github.com/pointfreeco/xctest-dynamic-overlay", from: "1.5.0"),
@@ -129,9 +126,6 @@ package.dependencies = [
 extension Target.Dependency {
   static let asyncAlgorithms: Self = .product(
     name: "AsyncAlgorithms", package: "swift-async-algorithms"
-  )
-  static let concurrencyExtras: Self = .product(
-    name: "ConcurrencyExtras", package: "swift-concurrency-extras"
   )
   static let customDump: Self = .product(
     name: "CustomDump", package: "swift-custom-dump"
@@ -362,7 +356,7 @@ infix operator <>
 extension String {
 
   /// Adds the string as a module to the package, using the provided module
-  @MainActor static func <+ (lhs: String, rhs: Module) {
+  static func <+ (lhs: String, rhs: Module) {
     var module = rhs
     module.name = lhs
     package.add(module: module)
@@ -373,7 +367,7 @@ infix operator <+
 extension String {
 
   /// Adds the string as a module to the package, allowing for inline customization
-  @MainActor static func <> (lhs: String, rhs: Module.Builder) {
+  static func <> (lhs: String, rhs: Module.Builder) {
     var module = Module(name: lhs)
     rhs(&module)
     package.add(module: module)
