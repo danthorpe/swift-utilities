@@ -2,10 +2,10 @@
 
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
-public struct Reachability {
-  public var monitor: () -> AsyncStream<Path>
+public struct Reachability: Sendable {
+  public var monitor: @Sendable () -> AsyncStream<Path>
 
-  public init(monitor: @escaping () -> AsyncStream<Path>) {
+  public init(monitor: @escaping @Sendable () -> AsyncStream<Path>) {
     self.monitor = monitor
   }
 }

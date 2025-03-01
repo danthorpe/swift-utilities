@@ -49,7 +49,7 @@ extension DependencyValues {
 }
 
 /// A dependency which generates a `ShortID`
-public struct ShortIDGenerator {
+public struct ShortIDGenerator: Sendable {
   private let generate: @Sendable () -> ShortID
 
   /// Creates a new ShortID every time it is executed

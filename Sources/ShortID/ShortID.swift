@@ -5,7 +5,7 @@ import Protected
 ///  and is locally-unique instead of globally unique. This is useful when
 ///  you wish to have more-or-less unique values which are much less verbose.
 public struct ShortID: Sendable {
-  public enum Strategy {
+  public enum Strategy: Sendable {
 
     /// Generates 6-character long ShortIDs using Base62
     ///  character set (i.e. base 64 but with + and / removed),
@@ -81,16 +81,16 @@ extension RandomCharacterGenerator {
 
 extension ShortID.Strategy {
 
-  private struct Base62Generator: RandomCharacterGenerator {
+  private struct Base62Generator: Sendable, RandomCharacterGenerator {
     let characters: String
     let count: Int
+    let defaultLength: Int
 
     static let shared = Base62Generator(
       characters: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-      count: 62
+      count: 62,
+      defaultLength: 6
     )
-
-    var defaultLength: Int { 6 }
 
     @Protected
     private var generated: Set<String> = []
@@ -102,16 +102,16 @@ extension ShortID.Strategy {
     }
   }
 
-  private struct Base36Generator: RandomCharacterGenerator {
+  private struct Base36Generator: Sendable, RandomCharacterGenerator {
     let characters: String
     let count: Int
+    let defaultLength: Int
 
     static let shared = Base62Generator(
       characters: "0123456789abcdefghijklmnopqrstuvwxyz",
-      count: 36
+      count: 36,
+      defaultLength: 7
     )
-
-    var defaultLength: Int { 7 }
 
     @Protected
     private var generated: Set<String> = []
