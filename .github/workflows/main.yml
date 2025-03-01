@@ -52,8 +52,22 @@ jobs:
               "xcode": "15.3"
             },
             {
+              "os": "macos-15",
+              "swift": "5.10",
+              "xcode": "16.2"
+            },
+            {
+              "os": "macos-15",
+              "swift": "6.0",
+              "xcode": "16.2"
+            },
+            {
               "os": "ubuntu-latest",
               "swift": "5.10"
+            },
+            {
+              "os": "ubuntu-latest",
+              "swift": "6.0"
             }
           ]
         }
