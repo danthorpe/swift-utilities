@@ -13,30 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  analysis:
-    name: CodeQL
-    if: github.event_name != 'workflow_dispatch'
-    uses: danthorpe/ci/.github/workflows/static-analysis.yml@main
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    with:
-      matrix: >
-        {
-          "include": [
-            {
-              "os": "macos-latest",
-              "swift": "latest",
-              "xcode": "latest"
-            },
-            {
-              "os": "ubuntu-latest",
-              "swift": "latest",
-              "xcode": "latest"
-            }
-          ]
-        }
 
   swift-package-test:
     name: Test Swift Package
@@ -47,6 +23,11 @@ jobs:
         {
           "include": [
             {
+              "os": "macos-latest",
+              "xcode": "latest",
+              "swift": "6.0"
+            },
+            {
               "os": "ubuntu-latest",
               "swift": "6.0"
             }
@@ -56,7 +37,7 @@ jobs:
   docs:
     name: Docs
     if: github.event_name == 'push'
-    needs: [analysis, swift-package-test]
+    needs: [swift-package-test]
     uses: danthorpe/ci/.github/workflows/docs.yml@main
     with:
       os: 'macos-14'
