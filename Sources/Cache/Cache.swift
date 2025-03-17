@@ -26,7 +26,7 @@ public actor Cache<Key: Hashable & Sendable, Value> {
     case memoryPressure, countLimit, valueExpiry
   }
 
-  public enum Event {
+  public enum Event: Sendable {
     case willEvictCachedValues(Storage, reason: EvictionEvent)
     case shouldPersistCachedValues(Storage)
   }
@@ -149,7 +149,7 @@ extension Cache.CachedValue: Codable where Value: Codable {}
 @available(iOS 15.0, *)
 extension Cache {
 
-  public var events: some AsyncSequence {
+  public var events: AsyncStream<Event> {
     _events.stream
   }
 
