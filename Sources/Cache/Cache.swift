@@ -1,4 +1,5 @@
 import AsyncAlgorithms
+import ConcurrencyExtras
 import Dependencies
 import DequeModule
 import Extensions
@@ -18,24 +19,16 @@ import AppKit
 #endif
 
 @available(iOS 15.0, *)
-public actor Cache<Key: Hashable, Value> {
+public actor Cache<Key: Hashable & Sendable, Value> {
   public typealias Storage = [Key: CachedValue]
 
-  public enum EvictionEvent {
+  public enum EvictionEvent: Sendable {
     case memoryPressure, countLimit, valueExpiry
   }
 
-  public enum Event {
+  public enum Event: Sendable {
     case willEvictCachedValues(Storage, reason: EvictionEvent)
     case shouldPersistCachedValues(Storage)
-  }
-
-  enum SystemEvent {
-    enum MemoryPressure {
-      case warning, normal
-    }
-    case applicationWillSuspend
-    case applicationDidReceiveMemoryPressure(MemoryPressure)
   }
 
   typealias Access = Deque<Key>
@@ -55,27 +48,18 @@ public actor Cache<Key: Hashable, Value> {
 
   @Dependency(\.date) private var date
 
-  init<SystemEvents: AsyncSequence>(
+  init(
     limit: UInt,
-    data: Storage,
-    didReciveSystemEvents stream: SystemEvents
-  )
-  where SystemEvents.Element == SystemEvent {
+    data: Storage
+  ) {
     self.limit = limit
     self.data = data
     self.access = .init(data.keys)
     Task {
+      @Dependency(\.systemEvents) var events
       await handleEvictionEvents()
-      await startReceivingSystemEvents(from: stream)
+      await startReceivingSystemEvents(from: events.stream())
     }
-  }
-
-  public init(limit: UInt, data: Storage) {
-    self.init(
-      limit: limit,
-      data: data,
-      didReciveSystemEvents: SystemEvent.stream()
-    )
   }
 
   public init(limit: UInt, items: [Key: Value], duration: TimeInterval) {
@@ -83,8 +67,7 @@ public actor Cache<Key: Hashable, Value> {
       limit: limit,
       data: items.reduce(into: Storage()) { storage, element in
         storage[element.key] = CachedValue.with(value: element.value, duration: duration)
-      },
-      didReciveSystemEvents: SystemEvent.stream()
+      }
     )
   }
 
@@ -93,8 +76,7 @@ public actor Cache<Key: Hashable, Value> {
   public init(limit: UInt) {
     self.init(
       limit: limit,
-      data: .init(),
-      didReciveSystemEvents: SystemEvent.stream()
+      data: .init()
     )
   }
 
@@ -143,8 +125,8 @@ public actor Cache<Key: Hashable, Value> {
 // MARK: - Nested Types
 @available(iOS 15.0, *)
 extension Cache {
-  public struct CachedValue {
-    public let value: Value
+  public struct CachedValue: Sendable {
+    public nonisolated(unsafe) let value: Value
     public let cost: UInt64
     public let expirationDate: Date
 
@@ -167,7 +149,7 @@ extension Cache.CachedValue: Codable where Value: Codable {}
 @available(iOS 15.0, *)
 extension Cache {
 
-  public var events: some AsyncSequence {
+  public var events: AsyncStream<Event> {
     _events.stream
   }
 
@@ -247,49 +229,25 @@ extension Cache {
 
 // MARK: - Other Implementation Details
 
-@available(iOS 15.0, *)
-extension Cache.SystemEvent {
+protocol AsyncSequenceOf<Element>: AsyncSequence where Element: Sendable {}
 
-  static func stream(notificationCenter center: NotificationCenter = .default) -> AsyncStream<Self> {
-    let memoryPressure = AsyncStream { continuation in
-      let queue = DispatchQueue(label: "dan.works.swift-utilities.cache.memory-pressure")
-      let source = DispatchSource.makeMemoryPressureSource(eventMask: .all, queue: queue)
-      source.setEventHandler {
-        var event = source.data
-        event.formIntersection([.critical, .warning, .normal])
-        if event.contains([.warning, .critical]) {
-          continuation.yield(Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning))
-        } else {
-          continuation.yield(.applicationDidReceiveMemoryPressure(.normal))
-        }
-      }
-    }
+struct _AsyncSequenceOfWrapper<Base: AsyncSequence>: AsyncSequenceOf where Base.Element: Sendable {
+  typealias Element = Base.Element
+  typealias AsyncIterator = Base.AsyncIterator
+  @UncheckedSendable var base: Base
 
-    let willResign =
-      center
-      .notifications(named: .willResignActiveNotification)
-      .map { _ in Cache.SystemEvent.applicationWillSuspend }
-      .eraseToStream()
+  init(base: Base) {
+    self.base = base
+  }
 
-    let willTerminate =
-      center
-      .notifications(named: .willTerminateNotification)
-      .map { _ in Cache.SystemEvent.applicationWillSuspend }
-      .eraseToStream()
+  func makeAsyncIterator() -> AsyncIterator {
+    base.makeAsyncIterator()
+  }
+}
 
-    let willSuspend = merge(willResign, willTerminate)
-
-    #if os(iOS)
-    let additionalMemoryWarning =
-      center
-      .notifications(named: UIApplication.didReceiveMemoryWarningNotification)
-      .map { _ in Cache.SystemEvent.applicationDidReceiveMemoryPressure(.warning) }
-      .eraseToStream()
-
-    return merge(memoryPressure, willSuspend, additionalMemoryWarning).eraseToStream()
-    #else
-    return merge(memoryPressure, willSuspend).eraseToStream()
-    #endif
+extension AsyncSequence where Element: Sendable {
+  func erase() -> some AsyncSequenceOf<Element> {
+    _AsyncSequenceOfWrapper(base: self)
   }
 }
 
@@ -306,24 +264,6 @@ extension Cache.EvictionEvent: CustomStringConvertible {
       return "Value Expiry"
     }
   }
-}
-
-extension Notification.Name {
-  static let willResignActiveNotification: Self = {
-    #if canImport(AppKit)
-    return NSApplication.willResignActiveNotification
-    #elseif canImport(UIKit)
-    return UIApplication.willResignActiveNotification
-    #endif
-  }()
-
-  static let willTerminateNotification: Self = {
-    #if canImport(AppKit)
-    return NSApplication.willTerminateNotification
-    #elseif canImport(UIKit)
-    return UIApplication.willTerminateNotification
-    #endif
-  }()
 }
 
 extension Dictionary {

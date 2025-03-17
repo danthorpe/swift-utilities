@@ -1,6 +1,7 @@
 import CustomDump
-import XCTestDynamicOverlay
+import IssueReportingTestSupport
 
+@available(*, deprecated, message: "Use Swift Testing #expect macro instead.")
 public func XCTAssertThrowsError<T: Sendable>(
   _ expression: @autoclosure () async throws -> T,
   _ message: @autoclosure () -> String = "Expression did not throw an error.",
@@ -10,12 +11,13 @@ public func XCTAssertThrowsError<T: Sendable>(
 ) async {
   do {
     _ = try await expression()
-    XCTFail(message(), file: file, line: line)
+    _ = _XCTFail()
   } catch {
     errorHandler(error)
   }
 }
 
+@available(*, deprecated, message: "Use Swift Testing #expect macro instead.")
 public func XCTAssertThrowsError<T: Sendable, E: Error & Equatable>(
   _ expression: @autoclosure () async throws -> T,
   _ message: @autoclosure () -> String = "Expression did not throw an error.",
@@ -25,10 +27,10 @@ public func XCTAssertThrowsError<T: Sendable, E: Error & Equatable>(
 ) async {
   do {
     _ = try await expression()
-    XCTFail(message(), file: file, line: line)
+    _ = _XCTFail()
   } catch {
     guard let error = error as? E else {
-      XCTFail("Unexpected error type received: \(error)", file: file, line: line)
+      _ = _XCTFail()
       return
     }
     XCTAssertNoDifference(error, expectation)
